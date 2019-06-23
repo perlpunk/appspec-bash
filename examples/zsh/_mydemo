@@ -1,0 +1,331 @@
+#compdef mydemo
+
+# Generated with perl module App::Spec v0.010
+
+_mydemo() {
+    local program=mydemo
+    typeset -A opt_args
+    local curcontext="$curcontext" state line context
+
+
+        # ---- Command: 
+        _arguments -s  \
+            '1: :->cmd1' \
+            '*: :->args' \
+            && ret=0
+
+
+        case $state in
+        cmd1)
+            _alternative 'args:cmd2:((help\:"Show command help" test1\:"Test command"))'
+        ;;
+
+        args)
+            case $line[1] in
+            _meta)
+
+                # ---- Command: _meta
+                _arguments -s -C \
+                    '1: :->cmd1' \
+                    '2: :->cmd2' \
+                    '*: :->args' \
+                    && ret=0
+
+
+                case $state in
+                cmd2)
+                    _alternative 'args:cmd3:((completion\:"Shell completion functions" pod\:"Pod documentation"))'
+                ;;
+
+                args)
+                    case $line[2] in
+                    completion)
+
+                        # ---- Command: _meta completion
+                        _arguments -s -C \
+                            '1: :->cmd1' \
+                            '2: :->cmd2' \
+                            '3: :->cmd3' \
+                            '*: :->args' \
+                            && ret=0
+
+
+                        case $state in
+                        cmd3)
+                            _alternative 'args:cmd4:((generate\:"Generate self completion"))'
+                        ;;
+
+                        args)
+                            case $line[3] in
+                            generate)
+
+                                # ---- Command: _meta completion generate
+                                _arguments -s -C \
+                                    '1: :->cmd1' \
+                                    '2: :->cmd2' \
+                                    '3: :->cmd3' \
+                                    '--version[Show version]' \
+                                    '-V[Show version]' \
+                                    '--help[Show command help]' \
+                                    '-h[Show command help]' \
+                                    '--name[name of the program (optional, override name in spec)]:name' \
+                                    '--zsh[for zsh]' \
+                                    '--bash[for bash]' \
+                                    && ret=0
+
+
+                            ;;
+                            esac
+
+                        ;;
+
+                        esac
+                    ;;
+                    pod)
+
+                        # ---- Command: _meta pod
+                        _arguments -s -C \
+                            '1: :->cmd1' \
+                            '2: :->cmd2' \
+                            '3: :->cmd3' \
+                            '*: :->args' \
+                            && ret=0
+
+
+                        case $state in
+                        cmd3)
+                            _alternative 'args:cmd4:((generate\:"Generate self pod"))'
+                        ;;
+
+                        args)
+                            case $line[3] in
+                            generate)
+
+                                # ---- Command: _meta pod generate
+                                _arguments -s -C \
+                                    '1: :->cmd1' \
+                                    '2: :->cmd2' \
+                                    '3: :->cmd3' \
+                                    '--version[Show version]' \
+                                    '-V[Show version]' \
+                                    '--help[Show command help]' \
+                                    '-h[Show command help]' \
+                                    && ret=0
+
+
+                            ;;
+                            esac
+
+                        ;;
+
+                        esac
+                    ;;
+                    esac
+
+                ;;
+
+                esac
+            ;;
+            help)
+
+                # ---- Command: help
+                _arguments -s -C \
+                    '1: :->cmd1' \
+                    '2: :->cmd2' \
+                    '*: :->args' \
+                    && ret=0
+
+
+                case $state in
+                cmd2)
+                    _alternative 'args:cmd3:((test1))'
+                ;;
+
+                args)
+                    case $line[2] in
+                    _meta)
+
+                        # ---- Command: help _meta
+                        _arguments -s -C \
+                            '1: :->cmd1' \
+                            '2: :->cmd2' \
+                            '3: :->cmd3' \
+                            '*: :->args' \
+                            && ret=0
+
+
+                        case $state in
+                        cmd3)
+                            _alternative 'args:cmd4:((completion pod))'
+                        ;;
+
+                        args)
+                            case $line[3] in
+                            completion)
+
+                                # ---- Command: help _meta completion
+                                _arguments -s -C \
+                                    '1: :->cmd1' \
+                                    '2: :->cmd2' \
+                                    '3: :->cmd3' \
+                                    '4: :->cmd4' \
+                                    '*: :->args' \
+                                    && ret=0
+
+
+                                case $state in
+                                cmd4)
+                                    _alternative 'args:cmd5:((generate))'
+                                ;;
+
+                                args)
+                                    case $line[4] in
+                                    generate)
+
+                                        # ---- Command: help _meta completion generate
+                                        _arguments -s -C \
+                                            '1: :->cmd1' \
+                                            '2: :->cmd2' \
+                                            '3: :->cmd3' \
+                                            '4: :->cmd4' \
+                                            '--version[Show version]' \
+                                            '-V[Show version]' \
+                                            '--help[Show command help]' \
+                                            '-h[Show command help]' \
+                                            '--all[]' \
+                                            && ret=0
+
+
+                                    ;;
+                                    esac
+
+                                ;;
+
+                                esac
+                            ;;
+                            pod)
+
+                                # ---- Command: help _meta pod
+                                _arguments -s -C \
+                                    '1: :->cmd1' \
+                                    '2: :->cmd2' \
+                                    '3: :->cmd3' \
+                                    '4: :->cmd4' \
+                                    '*: :->args' \
+                                    && ret=0
+
+
+                                case $state in
+                                cmd4)
+                                    _alternative 'args:cmd5:((generate))'
+                                ;;
+
+                                args)
+                                    case $line[4] in
+                                    generate)
+
+                                        # ---- Command: help _meta pod generate
+                                        _arguments -s -C \
+                                            '1: :->cmd1' \
+                                            '2: :->cmd2' \
+                                            '3: :->cmd3' \
+                                            '4: :->cmd4' \
+                                            '--version[Show version]' \
+                                            '-V[Show version]' \
+                                            '--help[Show command help]' \
+                                            '-h[Show command help]' \
+                                            '--all[]' \
+                                            && ret=0
+
+
+                                    ;;
+                                    esac
+
+                                ;;
+
+                                esac
+                            ;;
+                            esac
+
+                        ;;
+
+                        esac
+                    ;;
+                    test1)
+
+                        # ---- Command: help test1
+                        _arguments -s -C \
+                            '1: :->cmd1' \
+                            '2: :->cmd2' \
+                            '--version[Show version]' \
+                            '-V[Show version]' \
+                            '--help[Show command help]' \
+                            '-h[Show command help]' \
+                            '--all[]' \
+                            && ret=0
+
+
+                    ;;
+                    esac
+
+                ;;
+
+                esac
+            ;;
+            test1)
+
+                # ---- Command: test1
+                _arguments -s -C \
+                    '1: :->cmd1' \
+                    '--version[Show version]' \
+                    '-V[Show version]' \
+                    '--help[Show command help]' \
+                    '-h[Show command help]' \
+                    '--flag-a[Flag a]' \
+                    '-a[Flag a]' \
+                    '--flag-b[Flag b]' \
+                    '-b[Flag b]' \
+                    '*--flag-c[Flag c (incremental)]' \
+                    '*-c[Flag c (incremental)]' \
+                    '--test-d[Option d]:test-d' \
+                    '-d[Option d]:test-d' \
+                    '--test-e[Option e]:test-e:("e1" "e2" "e3")' \
+                    '-e[Option e]:test-e:("e1" "e2" "e3")' \
+                    '*--test-f[Option f (multi)]:test-f:("f1" "f2" "f3")' \
+                    '*-f[Option f (multi)]:test-f:("f1" "f2" "f3")' \
+                    '--test-g[Option g (required)]:test-g' \
+                    '-g[Option g (required)]:test-g' \
+                    && ret=0
+
+
+            ;;
+            esac
+
+        ;;
+
+        esac
+
+}
+
+
+__mydemo_dynamic_comp() {
+    local argname="$1"
+    local arg="$2"
+    local comp="arg:$argname:(("
+    local line
+    while read -r line; do
+        local name="$line"
+        local desc="$line"
+        name="${name%$'\t'*}"
+        desc="${desc/*$'\t'}"
+        comp="$comp$name"
+        if [[ -n "$desc" && "$name" != "$desc" ]]; then
+            comp="$comp\\:"'"'"$desc"'"'
+        fi
+        comp="$comp "
+    done <<< "$arg"
+
+    comp="$comp))"
+    _alternative "$comp"
+}
+

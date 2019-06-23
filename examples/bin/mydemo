@@ -1,0 +1,8 @@
+#!/bin/bash
+
+DIR="$( dirname $BASH_SOURCE )"
+
+source "$DIR/../lib/appspec"
+source "$DIR/../lib/mydemo"
+
+APPSPEC.run $@

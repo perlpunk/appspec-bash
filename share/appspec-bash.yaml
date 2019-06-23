@@ -1,0 +1,99 @@
+---
+name: appspec-bash
+appspec: { version: 0.001 }
+title: Command line framework generator for bash
+abstract: Generate commandline parser, completion and man pages
+class: App::Spec::Bash
+markup: pod
+description: |
+  This script can generate a commandline parser for bash from a specification
+  file written in YAML.
+
+  Writing a parser for commandline arguments isn't rocket science, but it's
+  something you don't want to do manually for all of your scripts, especially
+  in bash. Some tools exist, but they often don't support subcommands or
+  validating of option values.
+
+  C<appspec>/C<appspec-bash> can generate pretty much everything for you:
+
+  =over
+
+  =item Commandline parser for subcommands, options and parameters
+
+  =item Shell completion files
+
+  =item man pages
+
+  =back
+
+options: []
+
+subcommands:
+
+  parser:
+    op: parser
+    summary: Generate main commandline parser script
+
+    parameters:
+    - +spec= +file     --YAML Specification file
+    - +output= +file   --Output file, e.g. lib/appspec
+
+    description: |
+      Here is a short example of a very simple script.
+
+      The following files are needed:
+
+        share/mytool.yaml
+        bin/mytool
+        lib/appspec # generated
+        lib/mytool
+
+      The spec:
+
+        # share/mytool.yaml
+        ---
+        name: mytool           # commandname
+        appspec: { version: 0.001 }
+        title: My cool tool    # Will be shown in help
+        class: MyTool          # "Class name" (means function prefix here)
+
+        subcommands:
+          command1:
+            op: command1       # The function name
+            summary: cmd one   # Will be shown in help and completion
+            options:
+            - foo|f=s --Foo    # --foo or -f; '=s' means string
+            - bar|b   --Bar    # --bar or -b; a flag
+
+      Generate generate the parser like this:
+
+        $ appspec-bash parser share/mytool.yaml lib/appspec
+
+      Your script C<mytool> would look like this:
+
+        # bin/mytool
+        #!/bin/bash
+        DIR="$( dirname $BASH_SOURCE )"
+        source "$DIR/../lib/appspec"
+        source "$DIR/../lib/mytool"
+        APPSPEC.run $@
+
+      C<APPSPEC.run> will parse the arguments and then call the function
+      C<MyTool.command1>. In this function you can use the options via
+      C<$OPT_FOO> and C<$OPT_BAR>.
+
+        $ mytool command1 --foo x --bar y
+        # or
+        $ mytool command1 -f x -b y
+
+      And the actual app:
+
+        # lib/mytool
+        #!/bin/bash
+        MyTool.command1() {
+            echo "=== OPTION foo: $OPT_FOO"
+            echo "=== OPTION bar: $OPT_BAR"
+        }
+
+
+# vim:et:sts=2:sws=2:sw=2:foldmethod=indent

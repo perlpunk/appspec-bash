@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+docker_status=active
+cups_status=active
+libvirtd_status=inactive
+cups_status=error
+
+MyDemo.test1() {
+    echo "========= MyDemo.test1"
+    echo "=== OPTION flag-a '$OPT_FLAG_A'"
+    echo "=== OPTION flag-b '$OPT_FLAG_B'"
+    echo "=== OPTION flag-c '$OPT_FLAG_C'"
+    echo "=== OPTION test-d '$OPT_TEST_D'"
+    echo "=== OPTION test-e '$OPT_TEST_E'"
+    echo "=== OPTION test-f '${OPT_TEST_F[*]}'"
+    echo "=== OPTION test-g '$OPT_TEST_G'"
+
+}

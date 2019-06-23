@@ -1,0 +1,14 @@
+all: completion pod lib/App/AppSpec/Spec.pm
+
+completion:
+	appspec completion share/appspec-bash.yaml --zsh  > share/completion/zsh/_appspec-bash
+	appspec completion share/appspec-bash.yaml --bash  > share/completion/bash/appspec-bash.bash
+	appspec completion examples/mydemo.yaml --zsh  > examples/zsh/_mydemo
+	appspec completion examples/mydemo.yaml --bash  > examples/bash/mydemo.bash
+
+pod:
+	appspec pod share/appspec-bash.yaml > lib/appspec-bash.pod
+	appspec pod examples/mydemo.yaml > examples/pod/mydemo.pod
+
+#lib/App/AppSpec/Spec.pm: share/appspec-bash.yaml
+#	perl tools/generate-spec-pm.pl

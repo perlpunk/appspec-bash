@@ -1,0 +1,11 @@
+---
+- args: [test1, -abcccce, e1, -d, foo, -f, f1, -f, f2, --test-g, xy]
+  output:
+    - regex: === OPTION flag-a 'true'
+    - regex: === OPTION flag-b 'true'
+    - regex: === OPTION flag-c '4'
+    - regex: === OPTION test-d 'foo'
+    - regex: === OPTION test-e 'e1'
+    - regex: === OPTION test-f 'f1 f2'
+    - regex: === OPTION test-g 'xy'
+

@@ -1,0 +1,28 @@
+---
+name: mydemo
+class: MyDemo
+appspec: { version: 0.001 }
+title: Demo
+abstract: Demonstrate appspec for bash
+
+options:
+- version|V --Show version
+
+subcommands:
+
+  test1:
+    summary: Test command
+    op: test1
+
+    options:
+    - flag-a|a   --Flag a
+    - flag-b|b   --Flag b
+    - flag-c|c+  --Flag c (incremental)
+    - test-d|d=s --Option d
+    - spec: test-e|e=s --Option e
+      enum: [e1, e2, e3]
+    - spec: test-f|f=s@  --Option f (multi)
+      enum: [f1, f2, f3]
+    - +test-g|g=s         --Option g (required)
+
+# vim:et:sts=2:sws=2:sw=2:foldmethod=indent

@@ -28,19 +28,7 @@ C<appspec>/C<appspec-bash> can generate pretty much everything for you:
 
 =back
 
-
-=head2 GLOBAL OPTIONS
-
-    --help -h    Show command help (flag)
-
-
-=head2 SUBCOMMANDS
-
-=head3  parser
-
-    appspec-bash  parser <spec> <output>
-
-Generate main commandline parser script
+=head2 EXAMPLES
 
 Here is a short example of a very simple script.
 
@@ -48,8 +36,11 @@ The following files are needed:
 
   share/mytool.yaml
   bin/mytool
-  lib/appspec # generated
   lib/mytool
+  lib/appspec                       # generated
+  share/completion/zsh/_mytool      # generated
+  share/completion/bash/mytool.bash # generated
+  pod/mytool.pod                    # generated
 
 The spec:
 
@@ -68,10 +59,6 @@ The spec:
       - foo|f=s --Foo    # --foo or -f; '=s' means string
       - bar|b   --Bar    # --bar or -b; a flag
 
-Generate generate the parser like this:
-
-  $ appspec-bash parser share/mytool.yaml lib/appspec
-
 Your script C<mytool> would look like this:
 
   # bin/mytool
@@ -81,15 +68,7 @@ Your script C<mytool> would look like this:
   source "$DIR/../lib/mytool"
   APPSPEC.run $@
 
-C<APPSPEC.run> will parse the arguments and then call the function
-C<MyTool.command1>. In this function you can use the options via
-C<$OPT_FOO> and C<$OPT_BAR>.
-
-  $ mytool command1 --foo x --bar y
-  # or
-  $ mytool command1 -f x -b y
-
-And the actual app:
+The actual app:
 
   # lib/mytool
   #!/bin/bash
@@ -98,6 +77,46 @@ And the actual app:
       echo "=== OPTION bar: $OPT_BAR"
   }
 
+=head3 Generating the parser
+
+Then generate the parser like this:
+
+  $ appspec-bash parser share/mytool.yaml lib/appspec
+
+
+C<APPSPEC.run> will parse the arguments and then call the function
+C<MyTool.command1>. In this function you can use the options via
+C<$OPT_FOO> and C<$OPT_BAR>.
+
+  $ mytool command1 --foo x --bar
+  # or
+  $ mytool command1 -f x -b
+  === OPTION foo: x
+  === OPTION bar: true
+
+=head3 Generate completion
+
+    $ appspec completion share/mytool.yaml --zsh >share/completion/zsh/_mytool
+    $ appspec completion share/mytool.yaml --bash >share/completion/bash/mytool.bash
+
+=head3 Generate pod
+
+    $ appspec pod share/mytool.yaml > pod/mytool.pod
+    $ perldoc pod/mytool.pod
+
+
+=head2 GLOBAL OPTIONS
+
+    --help -h    Show command help (flag)
+
+
+=head2 SUBCOMMANDS
+
+=head3  parser
+
+    appspec-bash  parser <spec> <output>
+
+Generate main commandline parser script
 
 Parameters:
 

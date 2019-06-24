@@ -26,6 +26,82 @@ description: |
 
   =back
 
+  =head2 EXAMPLES
+
+  Here is a short example of a very simple script.
+
+  The following files are needed:
+
+    share/mytool.yaml
+    bin/mytool
+    lib/mytool
+    lib/appspec                       # generated
+    share/completion/zsh/_mytool      # generated
+    share/completion/bash/mytool.bash # generated
+    pod/mytool.pod                    # generated
+
+  The spec:
+
+    # share/mytool.yaml
+    ---
+    name: mytool           # commandname
+    appspec: { version: 0.001 }
+    title: My cool tool    # Will be shown in help
+    class: MyTool          # "Class name" (means function prefix here)
+
+    subcommands:
+      command1:
+        op: command1       # The function name
+        summary: cmd one   # Will be shown in help and completion
+        options:
+        - foo|f=s --Foo    # --foo or -f; '=s' means string
+        - bar|b   --Bar    # --bar or -b; a flag
+
+  Your script C<mytool> would look like this:
+
+    # bin/mytool
+    #!/bin/bash
+    DIR="$( dirname $BASH_SOURCE )"
+    source "$DIR/../lib/appspec"
+    source "$DIR/../lib/mytool"
+    APPSPEC.run $@
+
+  The actual app:
+
+    # lib/mytool
+    #!/bin/bash
+    MyTool.command1() {
+        echo "=== OPTION foo: $OPT_FOO"
+        echo "=== OPTION bar: $OPT_BAR"
+    }
+
+  =head3 Generating the parser
+
+  Then generate the parser like this:
+
+    $ appspec-bash parser share/mytool.yaml lib/appspec
+
+
+  C<APPSPEC.run> will parse the arguments and then call the function
+  C<MyTool.command1>. In this function you can use the options via
+  C<$OPT_FOO> and C<$OPT_BAR>.
+
+    $ mytool command1 --foo x --bar
+    # or
+    $ mytool command1 -f x -b
+    === OPTION foo: x
+    === OPTION bar: true
+
+  =head3 Generate completion
+
+      $ appspec completion share/mytool.yaml --zsh >share/completion/zsh/_mytool
+      $ appspec completion share/mytool.yaml --bash >share/completion/bash/mytool.bash
+
+  =head3 Generate pod
+
+      $ appspec pod share/mytool.yaml > pod/mytool.pod
+      $ perldoc pod/mytool.pod
+
 options: []
 
 subcommands:
@@ -39,61 +115,5 @@ subcommands:
     - +output= +file   --Output file, e.g. lib/appspec
 
     description: |
-      Here is a short example of a very simple script.
-
-      The following files are needed:
-
-        share/mytool.yaml
-        bin/mytool
-        lib/appspec # generated
-        lib/mytool
-
-      The spec:
-
-        # share/mytool.yaml
-        ---
-        name: mytool           # commandname
-        appspec: { version: 0.001 }
-        title: My cool tool    # Will be shown in help
-        class: MyTool          # "Class name" (means function prefix here)
-
-        subcommands:
-          command1:
-            op: command1       # The function name
-            summary: cmd one   # Will be shown in help and completion
-            options:
-            - foo|f=s --Foo    # --foo or -f; '=s' means string
-            - bar|b   --Bar    # --bar or -b; a flag
-
-      Generate generate the parser like this:
-
-        $ appspec-bash parser share/mytool.yaml lib/appspec
-
-      Your script C<mytool> would look like this:
-
-        # bin/mytool
-        #!/bin/bash
-        DIR="$( dirname $BASH_SOURCE )"
-        source "$DIR/../lib/appspec"
-        source "$DIR/../lib/mytool"
-        APPSPEC.run $@
-
-      C<APPSPEC.run> will parse the arguments and then call the function
-      C<MyTool.command1>. In this function you can use the options via
-      C<$OPT_FOO> and C<$OPT_BAR>.
-
-        $ mytool command1 --foo x --bar y
-        # or
-        $ mytool command1 -f x -b y
-
-      And the actual app:
-
-        # lib/mytool
-        #!/bin/bash
-        MyTool.command1() {
-            echo "=== OPTION foo: $OPT_FOO"
-            echo "=== OPTION bar: $OPT_BAR"
-        }
-
 
 # vim:et:sts=2:sws=2:sw=2:foldmethod=indent

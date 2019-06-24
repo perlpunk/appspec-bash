@@ -9,3 +9,8 @@
     - regex: === OPTION test-f 'f1 f2'
     - regex: === OPTION test-g 'xy'
 
+- args: [test1, -ccee1, -dfoo]
+  output:
+    - regex: === OPTION flag-c '2'
+    - regex: === OPTION test-d 'foo'
+    - regex: === OPTION test-e 'e1'

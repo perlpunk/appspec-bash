@@ -32,22 +32,26 @@ sub generate_app {
 
     my @all_options;
     my $options = $spec->options;
-    my $declare_options;
     my $local_declare = '';
     my $global_opt_long = '';
     my $global_opt_short = '';
     if (@$options) {
-        ($declare_options, $local_declare, $global_opt_long, $global_opt_short)
+        ($local_declare, $global_opt_long, $global_opt_short)
             = $self->generate_options(2, $options);
     }
     push @all_options, @$options;
 
+    my @functions;
+    my @commands;
+
     my $subcommands = $spec->subcommands;
     my $subcmds = $self->generate_subcommands(
-        declare_options => \$declare_options,
         subcommands => $subcommands,
         level => 2,
+        functions => \@functions,
+        commands => \@commands,
     );
+    my $functions = join "\n", @functions;
 
     my $run = '';
     my $bash = <<"EOM";
@@ -58,7 +62,6 @@ sub generate_app {
 # App::Spec::Bash v$appspec_bash_version
 # $name - $title
 
-$declare_options
 declare OP=
 declare -a ERRORS=()
 
@@ -67,11 +70,18 @@ DEBUG=false
 
 APPSPEC.run() {
   APPSPEC.parse \$@
+}
+
+APPSPEC.run-op() {
   if (( \${#ERRORS[*]} > 0 )); then
     debug "ERRORS: (\${ERRORS[*]})"
   else
     debug "OP: \$OP"
+  fi
+  if [[ -n "\$OP" ]]; then
     $class.\$OP
+  else
+    echo "No operation found"
   fi
 }
 
@@ -95,6 +105,8 @@ $subcmds
   debug "ARGV: \${argv[*]}"
 }
 
+$functions
+
 EOM
     $bash .= <<'EOM';
 shift_arg() {
@@ -114,60 +126,71 @@ sub generate_subcommands {
     my $level = $args{level};
     my $indent = ' ' x ($level * 2);
     my $subcommands = $args{subcommands};
-    my $declare_all_options = $args{declare_options};
+    my $functions = $args{functions};
     my $code;
     if (%$subcommands) {
         my $case = <<"EOM";
 EOM
         for my $name (sort keys %$subcommands) {
+            # no support for _meta functions
+            next if $name eq '_meta';
+
             my $spec = $subcommands->{ $name };
             my $sub = $spec->subcommands;
             my $op = $spec->op || '';
             my $subcmds = ''; # TODO
             my $options = $spec->options;
-            my $declare_options;
             my $local_declare = '';
             my $global_opt_long = '';
             my $global_opt_short = '';
             if (@$options) {
-                ($declare_options, $local_declare, $global_opt_long, $global_opt_short)
+                ($local_declare, $global_opt_long, $global_opt_short)
                     = $self->generate_options($level + 3, $options);
-                $$declare_all_options .= $declare_options;
             }
 
 
             $case .= <<"EOM";
-${indent}$name)
-${indent}  debug COMMAND $name
+    $name)
+      debug COMMAND $name
 $local_declare
-${indent}  shift_arg
-${indent}  OP=$op
-${indent}  while [[ \${#argv} > 0 ]]; do
-${indent}    case "\${argv[0]}" in
-$global_opt_long
-${indent}    -*)
-$global_opt_short
-${indent}    ;;
-${indent}    *)
-$subcmds
-${indent}      shift_arg
-${indent}    ;;
-${indent}    esac
-${indent}  done
-
-${indent}  break
-${indent};;
+      shift_arg
+      OP=$op
+      APPSPEC.parse-$name
+      APPSPEC.run-op
+      return
+    ;;
 EOM
+
+            my $function = <<"EOM";
+APPSPEC.parse-$name() {
+  while [[ \${#argv} > 0 ]]; do
+    case "\${argv[0]}" in
+$global_opt_long
+    -*)
+$global_opt_short
+    ;;
+    *)
+$subcmds
+      shift_arg
+    ;;
+    esac
+  done
+
+}
+EOM
+            push @$functions, $function;
+
         }
         $code .= $case;
+
     }
     $code .= <<"EOM";
-${indent}  *)
-${indent}  debug "UNKNOWN cmd \${argv[0]}"
-${indent}  ERRORS+=("unknown subcommand \${argv[0]}")
-${indent}  shift_arg
-${indent}  return
-${indent}  ;;
+    *)
+      debug "UNKNOWN cmd \${argv[0]}"
+      ERRORS+=("unknown subcommand \${argv[0]}")
+      shift_arg
+      return
+    ;;
 
 EOM
     return $code;
@@ -177,16 +200,20 @@ sub generate_options {
     my ($self, $level, $options) = @_;
     my $indent = ' ' x ($level * 2);
 
-    my $declare = '';
     my $local_declare = '';
     my $long = <<"EOM";
 EOM
     my $short = <<"EOM";
-${indent}  local i arg=\${argv[0]/-/}
-${indent}  for (( i=0; i < "\${#arg}"; i++ )); do
-${indent}    local char="\${arg:\$i:1}"
-${indent}    debug "processing short \$char"
-${indent}    case "\$char" in
+      local i arg=\${argv[0]/-/}
+      for (( i=0; i < "\${#arg}"; i++ )); do
+        local char="\${arg:\$i:1}"
+        value="\${arg:\$i+1}"
+        if (( \$i+1 == \${#arg} )); then
+          shift_arg
+          value="\${argv[0]}"
+        fi
+        debug "processing short \$char. arg=\$arg value=\$value"
+        case "\$char" in
 EOM
 
     for my $option (@$options) {
@@ -198,59 +225,43 @@ EOM
 
         if ($option->type eq 'flag') {
             if ($option->multiple) {
-                $declare .= sprintf "declare %s\n", $bashname;
-                $local_declare .= sprintf "${indent}declare -g -i %s=0\n", $bashname;
-                $long_action = sprintf "${indent}    %s+=1\n", $bashname;
-                $short_action = sprintf "${indent}        %s+=1\n", $bashname;
+                $local_declare .= sprintf "      declare -i %s=0\n", $bashname;
+                $long_action = sprintf "        %s+=1\n", $bashname;
+                $short_action = sprintf "          %s+=1\n", $bashname;
             }
             else {
-                $declare .= sprintf "declare %s\n", $bashname;
-                $local_declare .= sprintf "${indent}declare -g %s=false\n", $bashname;
-                $long_action = sprintf "${indent}    %s=true\n", $bashname;
-                $short_action = sprintf "${indent}        %s=true\n", $bashname;
+                $local_declare .= sprintf "      declare %s=false\n", $bashname;
+                $long_action = sprintf "        %s=true\n", $bashname;
+                $short_action = sprintf "          %s=true\n", $bashname;
             }
         }
         else {
             if ($option->multiple) {
-                $declare .= sprintf "declare %s\n", $bashname;
-                $local_declare .= sprintf "${indent}declare -g -a %s=()\n", $bashname;
+                $local_declare .= sprintf "      declare -a %s=()\n", $bashname;
                 $long_action = <<"EOM";
-${indent}    shift_arg
-${indent}    $bashname+=("\${argv[0]}")
+        shift_arg
+        $bashname+=("\${argv[0]}")
 EOM
                 $short_action = <<"EOM";
-${indent}if (( \$i+1 == \${#arg} )); then
-${indent}  shift_arg
-${indent}  $bashname+=("\${argv[0]}")
-${indent}else
-${indent}  $bashname+=("\${arg:\$i+1}")
-${indent}fi
-#${indent}        $bashname+=("\${arg:\$i+1}")
+          $bashname+=("\$value")
 EOM
             }
             else {
-                $declare .= sprintf "declare %s\n", $bashname;
-                $local_declare .= sprintf "${indent}declare -g %s=\n", $bashname;
+                $local_declare .= sprintf "      declare %s=\n", $bashname;
                 $long_action = <<"EOM";
-${indent}    shift_arg
-${indent}    $bashname="\${argv[0]}"
+        shift_arg
+        $bashname="\${argv[0]}"
 EOM
                 $short_action = <<"EOM";
-${indent}if (( \$i+1 == \${#arg} )); then
-${indent}  shift_arg
-${indent}  $bashname="\${argv[0]}"
-${indent}else
-${indent}  $bashname="\${arg:\$i+1}"
-${indent}fi
-#${indent}        $bashname="\${arg:\$i+1}"
+          $bashname="\$value"
 EOM
             }
             $short_action .= <<"EOM";
-${indent}        shift_arg
-${indent}        break
+          shift_arg
+          break
 EOM
         }
-        $long_action .= "${indent}    shift_arg\n";
+        $long_action .= "        shift_arg\n";
 
         my @names = ($name, @{ $option->aliases });
         my @case_long;
@@ -266,44 +277,41 @@ EOM
         my $case_long = join '|', @case_long;
         my $case_short = join '|', @case_short;
         $long .= <<"EOM";
-${indent}$case_long)
-${indent}    debug "LONG OPTION $name"
+    $case_long)
+        debug "LONG OPTION $name"
 $long_action
-${indent};;
+    ;;
 EOM
         if (@case_short) {
             $short .= <<"EOM";
-${indent}    $case_short)
-${indent}        debug "SHORT OPTION $name"
+        $case_short)
+          debug "SHORT OPTION $name"
 $short_action
-${indent}    ;;
+        ;;
 EOM
         }
     }
 
     $long .= <<"EOM";
-${indent}--*)
-${indent}    debug "!UNKNOWN OPTION \${argv[0]}"
-${indent}    ERRORS+=("unknown option \${argv[0]}")
-${indent}    shift_arg
-${indent}    break
-${indent};;
+    --*)
+        debug "!UNKNOWN OPTION \${argv[0]}"
+        ERRORS+=("unknown option \${argv[0]}")
+        shift_arg
+        break
+    ;;
 EOM
     $short .= <<"EOM";
-${indent}    *)
-${indent}      debug "!UNKNOWN option -\$char"
-${indent}      ERRORS+=("unknown option -\$char")
-${indent}      shift_arg
-${indent}      break
-${indent}    ;;
-${indent}    esac
-${indent}  done
-${indent}  if (( \$i == \${#arg} )); then
-${indent}    shift_arg
-${indent}  fi
+        *)
+          debug "!UNKNOWN option -\$char"
+          ERRORS+=("unknown option -\$char")
+          shift_arg
+          break
+        ;;
+        esac
+      done
 EOM
 
-    return ($declare, $local_declare, $long), $short;
+    return ($local_declare, $long), $short;
 }
 
 1;

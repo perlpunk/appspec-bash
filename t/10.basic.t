@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Test::More tests => 7;
+use Test::More;
 
 use FindBin '$Bin';
 use YAML::PP;
@@ -33,3 +33,5 @@ for my $test (@$testdata) {
         }
     }
 }
+
+done_testing;

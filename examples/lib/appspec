@@ -5,17 +5,6 @@
 # App::Spec::Bash v0.000
 # mydemo - Demo
 
-declare OPT_VERSION
-declare OPT_HELP
-declare OPT_ALL
-declare OPT_FLAG_A
-declare OPT_FLAG_B
-declare OPT_FLAG_C
-declare OPT_TEST_D
-declare OPT_TEST_E
-declare OPT_TEST_F
-declare OPT_TEST_G
-
 declare OP=
 declare -a ERRORS=()
 
@@ -24,19 +13,26 @@ DEBUG=false
 
 APPSPEC.run() {
   APPSPEC.parse $@
+}
+
+APPSPEC.run-op() {
   if (( ${#ERRORS[*]} > 0 )); then
     debug "ERRORS: (${ERRORS[*]})"
   else
     debug "OP: $OP"
+  fi
+  if [[ -n "$OP" ]]; then
     MyDemo.$OP
+  else
+    echo "No operation found"
   fi
 }
 
 APPSPEC.parse() {
   local argv=($@)
   debug "ARGV: ${argv[*]}"
-    declare -g OPT_VERSION=false
-    declare -g OPT_HELP=false
+      declare OPT_VERSION=false
+      declare OPT_HELP=false
 
   while [[ ${#argv} > 0 ]]; do
     debug "processing ${argv[0]}..."
@@ -64,16 +60,21 @@ APPSPEC.parse() {
       local i arg=${argv[0]/-/}
       for (( i=0; i < "${#arg}"; i++ )); do
         local char="${arg:$i:1}"
-        debug "processing short $char"
+        value="${arg:$i+1}"
+        if (( $i+1 == ${#arg} )); then
+          shift_arg
+          value="${argv[0]}"
+        fi
+        debug "processing short $char. arg=$arg value=$value"
         case "$char" in
         V)
-            debug "SHORT OPTION version"
-            OPT_VERSION=true
+          debug "SHORT OPTION version"
+          OPT_VERSION=true
 
         ;;
         h)
-            debug "SHORT OPTION help"
-            OPT_HELP=true
+          debug "SHORT OPTION help"
+          OPT_HELP=true
 
         ;;
         *)
@@ -84,250 +85,42 @@ APPSPEC.parse() {
         ;;
         esac
       done
-      if (( $i == ${#arg} )); then
-        shift_arg
-      fi
 
     ;;
 
     # SUBCOMMANDS
-    _meta)
-      debug COMMAND _meta
-
-      shift_arg
-      OP=
-      while [[ ${#argv} > 0 ]]; do
-        case "${argv[0]}" in
-
-        -*)
-
-        ;;
-        *)
-
-          shift_arg
-        ;;
-        esac
-      done
-
-      break
-    ;;
     help)
       debug COMMAND help
-          declare -g OPT_ALL=false
+      declare OPT_ALL=false
 
       shift_arg
       OP=cmd_help
-      while [[ ${#argv} > 0 ]]; do
-        case "${argv[0]}" in
-          --all)
-              debug "LONG OPTION all"
-              OPT_ALL=true
-              shift_arg
-
-          ;;
-          --*)
-              debug "!UNKNOWN OPTION ${argv[0]}"
-              ERRORS+=("unknown option ${argv[0]}")
-              shift_arg
-              break
-          ;;
-
-        -*)
-            local i arg=${argv[0]/-/}
-            for (( i=0; i < "${#arg}"; i++ )); do
-              local char="${arg:$i:1}"
-              debug "processing short $char"
-              case "$char" in
-              *)
-                debug "!UNKNOWN option -$char"
-                ERRORS+=("unknown option -$char")
-                shift_arg
-                break
-              ;;
-              esac
-            done
-            if (( $i == ${#arg} )); then
-              shift_arg
-            fi
-
-        ;;
-        *)
-
-          shift_arg
-        ;;
-        esac
-      done
-
-      break
+      APPSPEC.parse-help
+      APPSPEC.run-op
+      return
     ;;
     test1)
       debug COMMAND test1
-          declare -g OPT_FLAG_A=false
-          declare -g OPT_FLAG_B=false
-          declare -g -i OPT_FLAG_C=0
-          declare -g OPT_TEST_D=
-          declare -g OPT_TEST_E=
-          declare -g -a OPT_TEST_F=()
-          declare -g OPT_TEST_G=
+      declare OPT_FLAG_A=false
+      declare OPT_FLAG_B=false
+      declare -i OPT_FLAG_C=0
+      declare OPT_TEST_D=
+      declare OPT_TEST_E=
+      declare -a OPT_TEST_F=()
+      declare OPT_TEST_G=
 
       shift_arg
       OP=test1
-      while [[ ${#argv} > 0 ]]; do
-        case "${argv[0]}" in
-          --flag-a)
-              debug "LONG OPTION flag-a"
-              OPT_FLAG_A=true
-              shift_arg
-
-          ;;
-          --flag-b)
-              debug "LONG OPTION flag-b"
-              OPT_FLAG_B=true
-              shift_arg
-
-          ;;
-          --flag-c)
-              debug "LONG OPTION flag-c"
-              OPT_FLAG_C+=1
-              shift_arg
-
-          ;;
-          --test-d)
-              debug "LONG OPTION test-d"
-              shift_arg
-              OPT_TEST_D="${argv[0]}"
-              shift_arg
-
-          ;;
-          --test-e)
-              debug "LONG OPTION test-e"
-              shift_arg
-              OPT_TEST_E="${argv[0]}"
-              shift_arg
-
-          ;;
-          --test-f)
-              debug "LONG OPTION test-f"
-              shift_arg
-              OPT_TEST_F+=("${argv[0]}")
-              shift_arg
-
-          ;;
-          --test-g)
-              debug "LONG OPTION test-g"
-              shift_arg
-              OPT_TEST_G="${argv[0]}"
-              shift_arg
-
-          ;;
-          --*)
-              debug "!UNKNOWN OPTION ${argv[0]}"
-              ERRORS+=("unknown option ${argv[0]}")
-              shift_arg
-              break
-          ;;
-
-        -*)
-            local i arg=${argv[0]/-/}
-            for (( i=0; i < "${#arg}"; i++ )); do
-              local char="${arg:$i:1}"
-              debug "processing short $char"
-              case "$char" in
-              a)
-                  debug "SHORT OPTION flag-a"
-                  OPT_FLAG_A=true
-
-              ;;
-              b)
-                  debug "SHORT OPTION flag-b"
-                  OPT_FLAG_B=true
-
-              ;;
-              c)
-                  debug "SHORT OPTION flag-c"
-                  OPT_FLAG_C+=1
-
-              ;;
-              d)
-                  debug "SHORT OPTION test-d"
-          if (( $i+1 == ${#arg} )); then
-            shift_arg
-            OPT_TEST_D="${argv[0]}"
-          else
-            OPT_TEST_D="${arg:$i+1}"
-          fi
-#                  OPT_TEST_D="${arg:$i+1}"
-                  shift_arg
-                  break
-
-              ;;
-              e)
-                  debug "SHORT OPTION test-e"
-          if (( $i+1 == ${#arg} )); then
-            shift_arg
-            OPT_TEST_E="${argv[0]}"
-          else
-            OPT_TEST_E="${arg:$i+1}"
-          fi
-#                  OPT_TEST_E="${arg:$i+1}"
-                  shift_arg
-                  break
-
-              ;;
-              f)
-                  debug "SHORT OPTION test-f"
-          if (( $i+1 == ${#arg} )); then
-            shift_arg
-            OPT_TEST_F+=("${argv[0]}")
-          else
-            OPT_TEST_F+=("${arg:$i+1}")
-          fi
-#                  OPT_TEST_F+=("${arg:$i+1}")
-                  shift_arg
-                  break
-
-              ;;
-              g)
-                  debug "SHORT OPTION test-g"
-          if (( $i+1 == ${#arg} )); then
-            shift_arg
-            OPT_TEST_G="${argv[0]}"
-          else
-            OPT_TEST_G="${arg:$i+1}"
-          fi
-#                  OPT_TEST_G="${arg:$i+1}"
-                  shift_arg
-                  break
-
-              ;;
-              *)
-                debug "!UNKNOWN option -$char"
-                ERRORS+=("unknown option -$char")
-                shift_arg
-                break
-              ;;
-              esac
-            done
-            if (( $i == ${#arg} )); then
-              shift_arg
-            fi
-
-        ;;
-        *)
-
-          shift_arg
-        ;;
-        esac
-      done
-
-      break
+      APPSPEC.parse-test1
+      APPSPEC.run-op
+      return
     ;;
-      *)
+    *)
       debug "UNKNOWN cmd ${argv[0]}"
       ERRORS+=("unknown subcommand ${argv[0]}")
       shift_arg
       return
-      ;;
+    ;;
 
 
     esac
@@ -335,6 +128,182 @@ APPSPEC.parse() {
 
   debug "ARGV: ${argv[*]}"
 }
+
+APPSPEC.parse-help() {
+  while [[ ${#argv} > 0 ]]; do
+    case "${argv[0]}" in
+    --all)
+        debug "LONG OPTION all"
+        OPT_ALL=true
+        shift_arg
+
+    ;;
+    --*)
+        debug "!UNKNOWN OPTION ${argv[0]}"
+        ERRORS+=("unknown option ${argv[0]}")
+        shift_arg
+        break
+    ;;
+
+    -*)
+      local i arg=${argv[0]/-/}
+      for (( i=0; i < "${#arg}"; i++ )); do
+        local char="${arg:$i:1}"
+        value="${arg:$i+1}"
+        if (( $i+1 == ${#arg} )); then
+          shift_arg
+          value="${argv[0]}"
+        fi
+        debug "processing short $char. arg=$arg value=$value"
+        case "$char" in
+        *)
+          debug "!UNKNOWN option -$char"
+          ERRORS+=("unknown option -$char")
+          shift_arg
+          break
+        ;;
+        esac
+      done
+
+    ;;
+    *)
+
+      shift_arg
+    ;;
+    esac
+  done
+
+}
+
+APPSPEC.parse-test1() {
+  while [[ ${#argv} > 0 ]]; do
+    case "${argv[0]}" in
+    --flag-a)
+        debug "LONG OPTION flag-a"
+        OPT_FLAG_A=true
+        shift_arg
+
+    ;;
+    --flag-b)
+        debug "LONG OPTION flag-b"
+        OPT_FLAG_B=true
+        shift_arg
+
+    ;;
+    --flag-c)
+        debug "LONG OPTION flag-c"
+        OPT_FLAG_C+=1
+        shift_arg
+
+    ;;
+    --test-d)
+        debug "LONG OPTION test-d"
+        shift_arg
+        OPT_TEST_D="${argv[0]}"
+        shift_arg
+
+    ;;
+    --test-e)
+        debug "LONG OPTION test-e"
+        shift_arg
+        OPT_TEST_E="${argv[0]}"
+        shift_arg
+
+    ;;
+    --test-f)
+        debug "LONG OPTION test-f"
+        shift_arg
+        OPT_TEST_F+=("${argv[0]}")
+        shift_arg
+
+    ;;
+    --test-g)
+        debug "LONG OPTION test-g"
+        shift_arg
+        OPT_TEST_G="${argv[0]}"
+        shift_arg
+
+    ;;
+    --*)
+        debug "!UNKNOWN OPTION ${argv[0]}"
+        ERRORS+=("unknown option ${argv[0]}")
+        shift_arg
+        break
+    ;;
+
+    -*)
+      local i arg=${argv[0]/-/}
+      for (( i=0; i < "${#arg}"; i++ )); do
+        local char="${arg:$i:1}"
+        value="${arg:$i+1}"
+        if (( $i+1 == ${#arg} )); then
+          shift_arg
+          value="${argv[0]}"
+        fi
+        debug "processing short $char. arg=$arg value=$value"
+        case "$char" in
+        a)
+          debug "SHORT OPTION flag-a"
+          OPT_FLAG_A=true
+
+        ;;
+        b)
+          debug "SHORT OPTION flag-b"
+          OPT_FLAG_B=true
+
+        ;;
+        c)
+          debug "SHORT OPTION flag-c"
+          OPT_FLAG_C+=1
+
+        ;;
+        d)
+          debug "SHORT OPTION test-d"
+          OPT_TEST_D="$value"
+          shift_arg
+          break
+
+        ;;
+        e)
+          debug "SHORT OPTION test-e"
+          OPT_TEST_E="$value"
+          shift_arg
+          break
+
+        ;;
+        f)
+          debug "SHORT OPTION test-f"
+          OPT_TEST_F+=("$value")
+          shift_arg
+          break
+
+        ;;
+        g)
+          debug "SHORT OPTION test-g"
+          OPT_TEST_G="$value"
+          shift_arg
+          break
+
+        ;;
+        *)
+          debug "!UNKNOWN option -$char"
+          ERRORS+=("unknown option -$char")
+          shift_arg
+          break
+        ;;
+        esac
+      done
+
+    ;;
+    *)
+
+      shift_arg
+    ;;
+    esac
+  done
+
+}
+
 
 shift_arg() {
     argv=("${argv[@]:1}")

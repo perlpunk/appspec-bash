@@ -23,7 +23,7 @@ _mydemo() {
 
     0)
         __comp_current_options || return
-        __mydemo_dynamic_comp 'commands' 'help'$'\t''Show command help'$'\n''test1'$'\t''Test command'
+        __mydemo_dynamic_comp 'commands' 'help'$'\t''Show command help'$'\n''nested1'$'\t''Nested subcommand 1'$'\n''test1'$'\t''Test command'
 
     ;;
     *)
@@ -107,7 +107,7 @@ _mydemo() {
 
         1)
             __comp_current_options || return
-            __mydemo_dynamic_comp 'commands' 'test1'
+            __mydemo_dynamic_comp 'commands' 'nested1'$'\n''test1'
 
         ;;
         *)
@@ -172,7 +172,49 @@ _mydemo() {
             ;;
             esac
           ;;
+          nested1)
+            __mydemo_handle_options_flags
+            case $INDEX in
+
+            2)
+                __comp_current_options || return
+                __mydemo_dynamic_comp 'commands' 'nested2'
+
+            ;;
+            *)
+            # subcmds
+            case ${MYWORDS[2]} in
+              nested2)
+                __mydemo_handle_options_flags
+                __comp_current_options true || return # no subcmds, no params/opts
+              ;;
+            esac
+
+            ;;
+            esac
+          ;;
           test1)
+            __mydemo_handle_options_flags
+            __comp_current_options true || return # no subcmds, no params/opts
+          ;;
+        esac
+
+        ;;
+        esac
+      ;;
+      nested1)
+        __mydemo_handle_options_flags
+        case $INDEX in
+
+        1)
+            __comp_current_options || return
+            __mydemo_dynamic_comp 'commands' 'nested2'$'\t''Nested subcommand 2'
+
+        ;;
+        *)
+        # subcmds
+        case ${MYWORDS[1]} in
+          nested2)
             __mydemo_handle_options_flags
             __comp_current_options true || return # no subcmds, no params/opts
           ;;

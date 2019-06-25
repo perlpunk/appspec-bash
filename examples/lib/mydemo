@@ -16,3 +16,16 @@ MyDemo.test1() {
     echo "=== OPTION test-g '$OPT_TEST_G'"
 
 }
+
+MyDemo.nested1() {
+    echo "=== MyDemo.nested1"
+}
+
+MyDemo.nested2() {
+    echo "=== MyDemo.nested2"
+}
+
+# TODO shouldn't be necessary
+MyDemo.cmd_help() {
+  APPSPEC.cmd_help
+}

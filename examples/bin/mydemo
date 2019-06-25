@@ -2,7 +2,8 @@
 
 DIR="$( dirname $BASH_SOURCE )"
 
-source "$DIR/../lib/appspec"
-source "$DIR/../lib/mydemo"
+APPSPECDIR="$DIR/.."
+source "$APPSPECDIR/lib/appspec"
+source "$APPSPECDIR/lib/mydemo"
 
 APPSPEC.run $@

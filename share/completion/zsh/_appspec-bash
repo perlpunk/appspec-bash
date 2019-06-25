@@ -17,7 +17,7 @@ _appspec-bash() {
 
         case $state in
         cmd1)
-            _alternative 'args:cmd2:((help\:"Show command help" parser\:"Generate main commandline parser script"))'
+            _alternative 'args:cmd2:((generate\:"Generate parser, help" help\:"Show command help"))'
         ;;
 
         args)
@@ -122,6 +122,73 @@ _appspec-bash() {
 
                 esac
             ;;
+            generate)
+
+                # ---- Command: generate
+                _arguments -s -C \
+                    '1: :->cmd1' \
+                    '2: :->cmd2' \
+                    '*: :->args' \
+                    && ret=0
+
+
+                case $state in
+                cmd2)
+                    _alternative 'args:cmd3:((help\:"Generate help functions" parser\:"Generate main commandline parser script"))'
+                ;;
+
+                args)
+                    case $line[2] in
+                    help)
+
+                        # ---- Command: generate help
+                        _arguments -s -C \
+                            '1: :->cmd1' \
+                            '2: :->cmd2' \
+                            '3: :->spec' \
+                            '4: :->output' \
+                            '--help[Show command help]' \
+                            '-h[Show command help]' \
+                            && ret=0
+
+                        case $state in
+                        spec)
+_files
+                        ;;
+                        output)
+_files
+                        ;;
+                        esac
+
+                    ;;
+                    parser)
+
+                        # ---- Command: generate parser
+                        _arguments -s -C \
+                            '1: :->cmd1' \
+                            '2: :->cmd2' \
+                            '3: :->spec' \
+                            '4: :->output' \
+                            '--help[Show command help]' \
+                            '-h[Show command help]' \
+                            && ret=0
+
+                        case $state in
+                        spec)
+_files
+                        ;;
+                        output)
+_files
+                        ;;
+                        esac
+
+                    ;;
+                    esac
+
+                ;;
+
+                esac
+            ;;
             help)
 
                 # ---- Command: help
@@ -134,7 +201,7 @@ _appspec-bash() {
 
                 case $state in
                 cmd2)
-                    _alternative 'args:cmd3:((parser))'
+                    _alternative 'args:cmd3:((generate))'
                 ;;
 
                 args)
@@ -243,45 +310,49 @@ _appspec-bash() {
 
                         esac
                     ;;
-                    parser)
+                    generate)
 
-                        # ---- Command: help parser
+                        # ---- Command: help generate
                         _arguments -s -C \
                             '1: :->cmd1' \
                             '2: :->cmd2' \
-                            '--help[Show command help]' \
-                            '-h[Show command help]' \
-                            '--all[]' \
+                            '3: :->cmd3' \
+                            '*: :->args' \
                             && ret=0
 
 
+                        case $state in
+                        cmd3)
+                            _alternative 'args:cmd4:((parser))'
+                        ;;
+
+                        args)
+                            case $line[3] in
+                            parser)
+
+                                # ---- Command: help generate parser
+                                _arguments -s -C \
+                                    '1: :->cmd1' \
+                                    '2: :->cmd2' \
+                                    '3: :->cmd3' \
+                                    '--help[Show command help]' \
+                                    '-h[Show command help]' \
+                                    '--all[]' \
+                                    && ret=0
+
+
+                            ;;
+                            esac
+
+                        ;;
+
+                        esac
                     ;;
                     esac
 
                 ;;
 
                 esac
-            ;;
-            parser)
-
-                # ---- Command: parser
-                _arguments -s -C \
-                    '1: :->cmd1' \
-                    '2: :->spec' \
-                    '3: :->output' \
-                    '--help[Show command help]' \
-                    '-h[Show command help]' \
-                    && ret=0
-
-                case $state in
-                spec)
-_files
-                ;;
-                output)
-_files
-                ;;
-                esac
-
             ;;
             esac
 

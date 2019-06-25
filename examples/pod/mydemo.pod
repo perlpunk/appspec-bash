@@ -18,6 +18,20 @@ Demonstrate appspec for bash
 
 =head2 SUBCOMMANDS
 
+=head3  nested1
+
+    mydemo  nested1 <subcommands>
+
+Nested subcommand 1
+
+
+=head3 nested1 nested2
+
+    mydemo nested1 nested2
+
+Nested subcommand 2
+
+
 =head3  test1
 
     mydemo  test1 [options]

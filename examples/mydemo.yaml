@@ -25,4 +25,15 @@ subcommands:
       enum: [f1, f2, f3]
     - +test-g|g=s         --Option g (required)
 
+  nested1:
+    op: nested1
+    summary: Nested subcommand 1
+
+    subcommands:
+
+      nested2:
+        op: nested2
+        summary: Nested subcommand 2
+
+
 # vim:et:sts=2:sws=2:sw=2:foldmethod=indent

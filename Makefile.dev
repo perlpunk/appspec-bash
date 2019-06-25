@@ -12,7 +12,7 @@ pod:
 	appspec pod examples/mydemo.yaml > examples/pod/mydemo.pod
 
 example-parser:
-	perl -Ilib bin/appspec-bash parser examples/mydemo.yaml examples/lib/appspec
+	perl -Ilib bin/appspec-bash generate parser examples/mydemo.yaml examples/lib/appspec
 
 #lib/App/AppSpec/Spec.pm: share/appspec-bash.yaml
 #	perl tools/generate-spec-pm.pl

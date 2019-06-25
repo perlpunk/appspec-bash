@@ -17,7 +17,7 @@ _mydemo() {
 
         case $state in
         cmd1)
-            _alternative 'args:cmd2:((help\:"Show command help" test1\:"Test command"))'
+            _alternative 'args:cmd2:((help\:"Show command help" nested1\:"Nested subcommand 1" test1\:"Test command"))'
         ;;
 
         args)
@@ -138,7 +138,7 @@ _mydemo() {
 
                 case $state in
                 cmd2)
-                    _alternative 'args:cmd3:((test1))'
+                    _alternative 'args:cmd3:((nested1 test1))'
                 ;;
 
                 args)
@@ -251,6 +251,46 @@ _mydemo() {
 
                         esac
                     ;;
+                    nested1)
+
+                        # ---- Command: help nested1
+                        _arguments -s -C \
+                            '1: :->cmd1' \
+                            '2: :->cmd2' \
+                            '3: :->cmd3' \
+                            '*: :->args' \
+                            && ret=0
+
+
+                        case $state in
+                        cmd3)
+                            _alternative 'args:cmd4:((nested2))'
+                        ;;
+
+                        args)
+                            case $line[3] in
+                            nested2)
+
+                                # ---- Command: help nested1 nested2
+                                _arguments -s -C \
+                                    '1: :->cmd1' \
+                                    '2: :->cmd2' \
+                                    '3: :->cmd3' \
+                                    '--version[Show version]' \
+                                    '-V[Show version]' \
+                                    '--help[Show command help]' \
+                                    '-h[Show command help]' \
+                                    '--all[]' \
+                                    && ret=0
+
+
+                            ;;
+                            esac
+
+                        ;;
+
+                        esac
+                    ;;
                     test1)
 
                         # ---- Command: help test1
@@ -262,6 +302,43 @@ _mydemo() {
                             '--help[Show command help]' \
                             '-h[Show command help]' \
                             '--all[]' \
+                            && ret=0
+
+
+                    ;;
+                    esac
+
+                ;;
+
+                esac
+            ;;
+            nested1)
+
+                # ---- Command: nested1
+                _arguments -s -C \
+                    '1: :->cmd1' \
+                    '2: :->cmd2' \
+                    '*: :->args' \
+                    && ret=0
+
+
+                case $state in
+                cmd2)
+                    _alternative 'args:cmd3:((nested2\:"Nested subcommand 2"))'
+                ;;
+
+                args)
+                    case $line[2] in
+                    nested2)
+
+                        # ---- Command: nested1 nested2
+                        _arguments -s -C \
+                            '1: :->cmd1' \
+                            '2: :->cmd2' \
+                            '--version[Show version]' \
+                            '-V[Show version]' \
+                            '--help[Show command help]' \
+                            '-h[Show command help]' \
                             && ret=0
 
 

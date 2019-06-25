@@ -79,7 +79,7 @@ description: |
 
   Then generate the parser like this:
 
-    $ appspec-bash parser share/mytool.yaml lib/appspec
+    $ appspec-bash generate parser share/mytool.yaml lib/appspec
 
 
   C<APPSPEC.run> will parse the arguments and then call the function
@@ -106,14 +106,24 @@ options: []
 
 subcommands:
 
-  parser:
-    op: parser
-    summary: Generate main commandline parser script
+  generate:
+    summary: Generate parser, help
 
-    parameters:
-    - +spec= +file     --YAML Specification file
-    - +output= +file   --Output file, e.g. lib/appspec
+    subcommands:
+      parser:
+        op: parser
+        summary: Generate main commandline parser script
 
-    description: |
+        parameters:
+        - +spec= +file     --YAML Specification file
+        - +output= +file   --Output file, e.g. lib/appspec
+
+      help:
+        op: genhelp
+        summary: Generate help functions
+
+        parameters:
+        - +spec= +file     --YAML Specification file
+        - +output= +file   --Output file, e.g. help/help.bash
 
 # vim:et:sts=2:sws=2:sw=2:foldmethod=indent

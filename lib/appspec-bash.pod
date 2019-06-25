@@ -81,7 +81,7 @@ The actual app:
 
 Then generate the parser like this:
 
-  $ appspec-bash parser share/mytool.yaml lib/appspec
+  $ appspec-bash generate parser share/mytool.yaml lib/appspec
 
 
 C<APPSPEC.run> will parse the arguments and then call the function
@@ -112,9 +112,27 @@ C<$OPT_FOO> and C<$OPT_BAR>.
 
 =head2 SUBCOMMANDS
 
-=head3  parser
+=head3  generate
 
-    appspec-bash  parser <spec> <output>
+    appspec-bash  generate <subcommands>
+
+Generate parser, help
+
+
+=head3 generate help
+
+    appspec-bash generate help <spec> <output>
+
+Generate help functions
+
+Parameters:
+
+    spec    *  YAML Specification file         
+    output  *  Output file, e.g. help/help.bash
+
+=head3 generate parser
+
+    appspec-bash generate parser <spec> <output>
 
 Generate main commandline parser script
 

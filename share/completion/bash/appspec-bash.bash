@@ -23,7 +23,7 @@ _appspec-bash() {
 
     0)
         __comp_current_options || return
-        __appspec-bash_dynamic_comp 'commands' 'help'$'\t''Show command help'$'\n''parser'$'\t''Generate main commandline parser script'
+        __appspec-bash_dynamic_comp 'commands' 'generate'$'\t''Generate parser, help'$'\n''help'$'\t''Show command help'
 
     ;;
     *)
@@ -100,6 +100,61 @@ _appspec-bash() {
         ;;
         esac
       ;;
+      generate)
+        __appspec-bash_handle_options_flags
+        case $INDEX in
+
+        1)
+            __comp_current_options || return
+            __appspec-bash_dynamic_comp 'commands' 'help'$'\t''Generate help functions'$'\n''parser'$'\t''Generate main commandline parser script'
+
+        ;;
+        *)
+        # subcmds
+        case ${MYWORDS[1]} in
+          help)
+            __appspec-bash_handle_options_flags
+            case ${MYWORDS[$INDEX-1]} in
+
+            esac
+            case $INDEX in
+              2)
+                  __comp_current_options || return
+              ;;
+              3)
+                  __comp_current_options || return
+              ;;
+
+
+            *)
+                __comp_current_options || return
+            ;;
+            esac
+          ;;
+          parser)
+            __appspec-bash_handle_options_flags
+            case ${MYWORDS[$INDEX-1]} in
+
+            esac
+            case $INDEX in
+              2)
+                  __comp_current_options || return
+              ;;
+              3)
+                  __comp_current_options || return
+              ;;
+
+
+            *)
+                __comp_current_options || return
+            ;;
+            esac
+          ;;
+        esac
+
+        ;;
+        esac
+      ;;
       help)
         FLAGS+=('--all' '')
         __appspec-bash_handle_options_flags
@@ -107,7 +162,7 @@ _appspec-bash() {
 
         1)
             __comp_current_options || return
-            __appspec-bash_dynamic_comp 'commands' 'parser'
+            __appspec-bash_dynamic_comp 'commands' 'generate'
 
         ;;
         *)
@@ -172,31 +227,29 @@ _appspec-bash() {
             ;;
             esac
           ;;
-          parser)
+          generate)
             __appspec-bash_handle_options_flags
-            __comp_current_options true || return # no subcmds, no params/opts
+            case $INDEX in
+
+            2)
+                __comp_current_options || return
+                __appspec-bash_dynamic_comp 'commands' 'parser'
+
+            ;;
+            *)
+            # subcmds
+            case ${MYWORDS[2]} in
+              parser)
+                __appspec-bash_handle_options_flags
+                __comp_current_options true || return # no subcmds, no params/opts
+              ;;
+            esac
+
+            ;;
+            esac
           ;;
         esac
 
-        ;;
-        esac
-      ;;
-      parser)
-        __appspec-bash_handle_options_flags
-        case ${MYWORDS[$INDEX-1]} in
-
-        esac
-        case $INDEX in
-          1)
-              __comp_current_options || return
-          ;;
-          2)
-              __comp_current_options || return
-          ;;
-
-
-        *)
-            __comp_current_options || return
         ;;
         esac
       ;;

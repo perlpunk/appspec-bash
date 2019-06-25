@@ -147,7 +147,8 @@ APPSPEC.run() {
 
 APPSPEC.run-op() {
   if (( \${#ERRORS[*]} > 0 )); then
-    debug "ERRORS: (\${ERRORS[*]})"
+    echo "ERRORS: (\${ERRORS[*]})" >&2
+    exit 1
   else
     debug "OP: \$OP"
   fi
@@ -185,7 +186,7 @@ EOM
 
 APPSPEC.cmd_help() {
   echo help
-  source "$APPSPECDIR/help/help.bash"
+  source "$APPSPECDIR/lib/help"
   COMMANDS=("${COMMANDS[@]:1}")
   if [[ -n "$COMMANDS" ]]; then
     local func="${COMMANDS[*]}"

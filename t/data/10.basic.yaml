@@ -14,3 +14,15 @@
     - regex: === OPTION flag-c '2'
     - regex: === OPTION test-d 'foo'
     - regex: === OPTION test-e 'e1'
+
+- args: [help]
+  output:
+    - regex: 'Usage: mydemo help \<subcommands\> \[options\]'
+
+- args: [help, nested1]
+  output:
+    - regex: 'Usage: mydemo help nested1 \<subcommands\> \[options\]'
+
+- args: [help, nested1 nested2]
+  output:
+    - regex: 'Usage: mydemo help nested1 nested2 \[options\]'

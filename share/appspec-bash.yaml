@@ -39,6 +39,7 @@ description: |
     share/completion/zsh/_mytool      # generated
     share/completion/bash/mytool.bash # generated
     pod/mytool.pod                    # generated
+    lib/help                          # generated
 
   The spec:
 
@@ -86,7 +87,7 @@ description: |
   C<MyTool.command1>. In this function you can use the options via
   C<$OPT_FOO> and C<$OPT_BAR>.
 
-    $ mytool command1 --foo x --bar
+    $ ./bin/mytool command1 --foo x --bar
     # or
     $ mytool command1 -f x -b
     === OPTION foo: x
@@ -101,6 +102,10 @@ description: |
 
       $ appspec pod share/mytool.yaml > pod/mytool.pod
       $ perldoc pod/mytool.pod
+
+  =head3 Generate help
+
+      $ bin/appspec-bash generate help share/mydemo.yaml lib/help
 
 options: []
 
@@ -124,6 +129,6 @@ subcommands:
 
         parameters:
         - +spec= +file     --YAML Specification file
-        - +output= +file   --Output file, e.g. help/help.bash
+        - +output= +file   --Output file, e.g. lib/help
 
 # vim:et:sts=2:sws=2:sw=2:foldmethod=indent

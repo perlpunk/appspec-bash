@@ -41,6 +41,7 @@ The following files are needed:
   share/completion/zsh/_mytool      # generated
   share/completion/bash/mytool.bash # generated
   pod/mytool.pod                    # generated
+  lib/help                          # generated
 
 The spec:
 
@@ -88,7 +89,7 @@ C<APPSPEC.run> will parse the arguments and then call the function
 C<MyTool.command1>. In this function you can use the options via
 C<$OPT_FOO> and C<$OPT_BAR>.
 
-  $ mytool command1 --foo x --bar
+  $ ./bin/mytool command1 --foo x --bar
   # or
   $ mytool command1 -f x -b
   === OPTION foo: x
@@ -103,6 +104,10 @@ C<$OPT_FOO> and C<$OPT_BAR>.
 
     $ appspec pod share/mytool.yaml > pod/mytool.pod
     $ perldoc pod/mytool.pod
+
+=head3 Generate help
+
+    $ bin/appspec-bash generate help share/mydemo.yaml lib/help
 
 
 =head2 GLOBAL OPTIONS
@@ -127,8 +132,8 @@ Generate help functions
 
 Parameters:
 
-    spec    *  YAML Specification file         
-    output  *  Output file, e.g. help/help.bash
+    spec    *  YAML Specification file   
+    output  *  Output file, e.g. lib/help
 
 =head3 generate parser
 

@@ -10,3 +10,5 @@ RUN apk update \
     perl-dev \
     musl-dev \
     && cpanm -n YAML::PP App::Spec
+
+WORKDIR /appspec

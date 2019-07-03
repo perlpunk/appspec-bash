@@ -60,46 +60,5 @@ Options:
     --all     (flag)
 
 
-=head3  _meta
-
-    mydemo  _meta <subcommands>
-
-Information and utilities for this app
-
-
-=head3 _meta completion
-
-    mydemo _meta completion <subcommands>
-
-Shell completion functions
-
-
-=head3 _meta completion generate
-
-    mydemo _meta completion generate [options]
-
-Generate self completion
-
-Options:
-
-    --name    name of the program (optional, override name in spec)
-    --zsh     for zsh (flag)                                       
-    --bash    for bash (flag)                                      
-
-
-=head3 _meta pod
-
-    mydemo _meta pod <subcommands>
-
-Pod documentation
-
-
-=head3 _meta pod generate
-
-    mydemo _meta pod generate
-
-Generate self pod
-
-
 
 

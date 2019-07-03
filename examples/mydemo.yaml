@@ -1,6 +1,7 @@
 ---
 name: mydemo
 class: MyDemo
+plugins: [-Meta]
 appspec: { version: 0.001 }
 title: Demo
 abstract: Demonstrate appspec for bash

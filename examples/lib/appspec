@@ -18,6 +18,7 @@ APPSPEC.run() {
 
 APPSPEC.run-op() {
   if (( ${#ERRORS[*]} > 0 )); then
+    APPSPEC.cmd_help
     echo "ERRORS: (${ERRORS[*]})" >&2
     exit 1
   else
@@ -36,6 +37,12 @@ APPSPEC.parse() {
       declare OPT_VERSION=false
       declare OPT_HELP=false
 
+  if [[ ${#argv} -eq 0 ]]; then
+      debug "MISSING subcommand"
+      ERRORS+=("missing subcommand")
+      APPSPEC.run-op
+      return
+  fi
   while [[ ${#argv} > 0 ]]; do
     debug "processing ${argv[0]}..."
     case "${argv[0]}" in
@@ -98,10 +105,10 @@ APPSPEC.parse() {
 
       shift_arg
       APPSPEC.parse-help
-                if [[ -z "$OP" ]]; then
-                  OP=cmd_help
-                  APPSPEC.run-op
-                fi
+      if [[ -z "$OP" ]]; then
+        OP=cmd_help
+        APPSPEC.run-op
+      fi
 
       return
     ;;
@@ -111,10 +118,10 @@ APPSPEC.parse() {
 
       shift_arg
       APPSPEC.parse-nested1
-                if [[ -z "$OP" ]]; then
-                  OP=nested1
-                  APPSPEC.run-op
-                fi
+      if [[ -z "$OP" ]]; then
+        OP=nested1
+        APPSPEC.run-op
+      fi
 
       return
     ;;
@@ -131,10 +138,10 @@ APPSPEC.parse() {
 
       shift_arg
       APPSPEC.parse-test1
-                if [[ -z "$OP" ]]; then
-                  OP=test1
-                  APPSPEC.run-op
-                fi
+      if [[ -z "$OP" ]]; then
+        OP=test1
+        APPSPEC.run-op
+      fi
 
       return
     ;;
@@ -142,6 +149,7 @@ APPSPEC.parse() {
       debug "UNKNOWN cmd ${argv[0]}"
       ERRORS+=("unknown subcommand ${argv[0]}")
       shift_arg
+      APPSPEC.run-op
       return
     ;;
 
@@ -165,6 +173,7 @@ APPSPEC.parse-help-nested1-nested2() {
       debug "UNKNOWN cmd ${argv[0]}"
       ERRORS+=("unknown subcommand ${argv[0]}")
       shift_arg
+      APPSPEC.run-op
       return
     ;;
 
@@ -196,6 +205,7 @@ APPSPEC.parse-help-nested1() {
       debug "UNKNOWN cmd ${argv[0]}"
       ERRORS+=("unknown subcommand ${argv[0]}")
       shift_arg
+      APPSPEC.run-op
       return
     ;;
 
@@ -218,6 +228,7 @@ APPSPEC.parse-help-test1() {
       debug "UNKNOWN cmd ${argv[0]}"
       ERRORS+=("unknown subcommand ${argv[0]}")
       shift_arg
+      APPSPEC.run-op
       return
     ;;
 
@@ -288,6 +299,7 @@ APPSPEC.parse-help() {
       debug "UNKNOWN cmd ${argv[0]}"
       ERRORS+=("unknown subcommand ${argv[0]}")
       shift_arg
+      APPSPEC.run-op
       return
     ;;
 
@@ -327,10 +339,10 @@ APPSPEC.parse-nested1() {
 
       shift_arg
       APPSPEC.parse-nested1-nested2
-                if [[ -z "$OP" ]]; then
-                  OP=nested2
-                  APPSPEC.run-op
-                fi
+      if [[ -z "$OP" ]]; then
+        OP=nested2
+        APPSPEC.run-op
+      fi
 
       return
     ;;
@@ -338,6 +350,7 @@ APPSPEC.parse-nested1() {
       debug "UNKNOWN cmd ${argv[0]}"
       ERRORS+=("unknown subcommand ${argv[0]}")
       shift_arg
+      APPSPEC.run-op
       return
     ;;
 
@@ -484,9 +497,10 @@ APPSPEC.cmd_help() {
   if [[ -n "$COMMANDS" ]]; then
     local func="${COMMANDS[*]}"
     func="${func/ /-}"
+    debug "func $func"
     APPSPEC.help-$func
   else
-    APPSPEC.help
+    APPSPEC.help-ROOT
   fi
 }
 

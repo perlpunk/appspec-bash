@@ -41,7 +41,7 @@ sub genhelp {
     my $functions = '';
     for my $func (sort keys %help) {
         my $code = <<"EOM";
-APPSPEC.$func() {
+APPSPEC.help-$func() {
   cat <<EOHELP
 $help{ $func }
 EOHELP
@@ -76,6 +76,12 @@ sub generate_help {
     my $cmdspec = $args{cmdspec};
     my $help = $args{help};
     my $cmds = $args{commands};
+    my $cmdstring = @$cmds ? join '-', @$cmds : 'ROOT';
+    my $usage = $spec->usage(
+        commands => [ @$cmds ],
+        colored => 0,
+    );
+    $help->{ $cmdstring } = $usage;
 
     my $subcommands = $cmdspec->subcommands || {};
     for my $key (sort keys %$subcommands) {
@@ -147,6 +153,7 @@ APPSPEC.run() {
 
 APPSPEC.run-op() {
   if (( \${#ERRORS[*]} > 0 )); then
+    APPSPEC.cmd_help
     echo "ERRORS: (\${ERRORS[*]})" >&2
     exit 1
   else
@@ -163,6 +170,12 @@ APPSPEC.parse() {
   local argv=(\$@)
   debug "ARGV: \${argv[*]}"
 $local_declare
+  if [[ \${#argv} -eq 0 ]]; then
+      debug "MISSING subcommand"
+      ERRORS+=("missing subcommand")
+      APPSPEC.run-op
+      return
+  fi
   while [[ \${#argv} > 0 ]]; do
     debug "processing \${argv[0]}..."
     case "\${argv[0]}" in
@@ -191,9 +204,10 @@ APPSPEC.cmd_help() {
   if [[ -n "$COMMANDS" ]]; then
     local func="${COMMANDS[*]}"
     func="${func/ /-}"
+    debug "func $func"
     APPSPEC.help-$func
   else
-    APPSPEC.help
+    APPSPEC.help-ROOT
   fi
 }
 
@@ -235,10 +249,10 @@ EOM
             my $op = $spec->op || '';
             if ($op) {
                 $op = <<"EOM";
-                if [[ -z "\$OP" ]]; then
-                  OP=$op
-                  APPSPEC.run-op
-                fi
+      if [[ -z "\$OP" ]]; then
+        OP=$op
+        APPSPEC.run-op
+      fi
 EOM
             }
             my $options = $spec->options;
@@ -291,6 +305,7 @@ EOM
       debug "UNKNOWN cmd \${argv[0]}"
       ERRORS+=("unknown subcommand \${argv[0]}")
       shift_arg
+      APPSPEC.run-op
       return
     ;;
 

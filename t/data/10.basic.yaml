@@ -17,12 +17,12 @@
 
 - args: [help]
   output:
-    - regex: 'Usage: mydemo help \<subcommands\> \[options\]'
+    - regex: 'Usage: mydemo \<subcommands\> \[options\]'
 
 - args: [help, nested1]
   output:
-    - regex: 'Usage: mydemo help nested1 \<subcommands\> \[options\]'
+    - regex: 'Usage: mydemo nested1 \<subcommands\> \[options\]'
 
 - args: [help, nested1 nested2]
   output:
-    - regex: 'Usage: mydemo help nested1 nested2 \[options\]'
+    - regex: 'Usage: mydemo nested1 nested2 \[options\]'

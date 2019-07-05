@@ -9,7 +9,26 @@ APPSPEC.help() {
 Usage
 EOHELP
 }
-APPSPEC.help() {
+APPSPEC.help-ROOT() {
+  cat <<EOHELP
+mydemo - Demo
+Demonstrate appspec for bash
+
+Usage: mydemo <subcommands> [options]
+
+Subcommands:
+nested1  Nested subcommand 1
+test1    Test command
+help     Show command help
+
+Options:
+--help -h            Show command help (flag)
+--version -V         Show version (flag)
+
+EOHELP
+}
+
+APPSPEC.help-help() {
   cat <<EOHELP
 mydemo - Demo
 Demonstrate appspec for bash
@@ -28,7 +47,7 @@ Options:
 EOHELP
 }
 
-APPSPEC.help-nested1() {
+APPSPEC.help-help-nested1() {
   cat <<EOHELP
 mydemo - Demo
 Demonstrate appspec for bash
@@ -46,7 +65,7 @@ Options:
 EOHELP
 }
 
-APPSPEC.help-nested1-nested2() {
+APPSPEC.help-help-nested1-nested2() {
   cat <<EOHELP
 mydemo - Demo
 Demonstrate appspec for bash
@@ -62,7 +81,7 @@ Options:
 EOHELP
 }
 
-APPSPEC.help-test1() {
+APPSPEC.help-help-test1() {
   cat <<EOHELP
 mydemo - Demo
 Demonstrate appspec for bash
@@ -78,7 +97,7 @@ Options:
 EOHELP
 }
 
-APPSPEC.nested1() {
+APPSPEC.help-nested1() {
   cat <<EOHELP
 mydemo - Demo
 Demonstrate appspec for bash
@@ -95,7 +114,7 @@ Options:
 EOHELP
 }
 
-APPSPEC.nested1-nested2() {
+APPSPEC.help-nested1-nested2() {
   cat <<EOHELP
 mydemo - Demo
 Demonstrate appspec for bash
@@ -110,7 +129,7 @@ Options:
 EOHELP
 }
 
-APPSPEC.test1() {
+APPSPEC.help-test1() {
   cat <<EOHELP
 mydemo - Demo
 Demonstrate appspec for bash

@@ -6,7 +6,8 @@ libvirtd_status=inactive
 cups_status=error
 
 MyDemo.test1() {
-    echo "========= MyDemo.test1"
+    APPSPEC.say "MyDemo.test1" BOLD MAGENTA
+    APPSPEC.say "MyDemo.test1"
     echo "=== OPTION flag-a '$OPT_FLAG_A'"
     echo "=== OPTION flag-b '$OPT_FLAG_B'"
     echo "=== OPTION flag-c '$OPT_FLAG_C'"
@@ -18,11 +19,11 @@ MyDemo.test1() {
 }
 
 MyDemo.nested1() {
-    echo "=== MyDemo.nested1"
+    APPSPEC.say "MyDemo.nested1" BOLD YELLOW
 }
 
 MyDemo.nested2() {
-    echo "=== MyDemo.nested2"
+    APPSPEC.say "MyDemo.nested2" BOLD GREEN
 }
 
 # TODO shouldn't be necessary

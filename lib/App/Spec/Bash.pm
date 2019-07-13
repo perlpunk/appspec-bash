@@ -116,7 +116,7 @@ sub generate_app {
     my $global_opt_short = '';
     if (@$options) {
         ($local_declare, $global_opt_long, $global_opt_short)
-            = $self->generate_options(2, $options);
+            = $self->generate_options($options);
     }
     push @all_options, @$options;
 
@@ -130,6 +130,7 @@ sub generate_app {
         commands => \@commands,
     );
     my $functions = join "\n", @functions;
+    my $colors = $self->ansi_colors;
 
     my $run = '';
     my $bash = <<"EOM";
@@ -143,18 +144,21 @@ sub generate_app {
 declare OP=
 declare -a ERRORS=()
 declare -a COMMANDS=()
+declare stdout_terminal=false stderr_terminal=false
+$colors
 
 DEBUG=false
 [[ -n "\$APPSPEC_BASH_DEBUG" ]] && DEBUG=true
 
 APPSPEC.run() {
+  APPSPEC.init-terminal
   APPSPEC.parse \$@
 }
 
 APPSPEC.run-op() {
   if (( \${#ERRORS[*]} > 0 )); then
     APPSPEC.cmd_help
-    echo "ERRORS: (\${ERRORS[*]})" >&2
+    APPSPEC.error "\${ERRORS[*]}"
     exit 1
   else
     debug "OP: \$OP"
@@ -194,11 +198,73 @@ $subcmds
 
 $functions
 
+
 EOM
     $bash .= <<'EOM';
 
+APPSPEC.colored() {
+    local fh="$1"
+    local message="$2"
+    if [[ "$fh" == "stdout" ]] && ! $stdout_terminal; then
+        echo "$message"
+        return
+    fi
+    if [[ "$fh" == stderr ]] && ! $stderr_terminal; then
+        echo "$message"
+        return
+    fi
+    shift
+    shift
+    local colornames=($@)
+    local varname value colored=
+
+    for i in ${colornames[@]}; do
+        varname="APPSPEC_COLOR_$i"
+        value="${!varname}"
+        colored+="$value"
+    done
+
+    colored+="$message"
+    colored+="$APPSPEC_NO_COLOR"
+    echo "$colored"
+
+}
+
+APPSPEC.colorize() {
+    local fh="$1"
+    local message="$2"
+    shift
+    shift
+    [[ "$fh" == stdout ]] && echo -e "$(APPSPEC.colored "$fh" "$message" $@)"
+    [[ "$fh" == stderr ]] && echo -e "$(APPSPEC.colored "$fh" "$message" $@)" >&2
+}
+
+APPSPEC.say() {
+    local message="$1"
+    shift
+    if [[ $# -gt 0 ]]; then
+        echo -e "$(APPSPEC.colored stdout "$message" $@)"
+    else
+        echo "$message"
+    fi
+}
+
+APPSPEC.error() {
+    local message="$1"
+    echo -e "$(APPSPEC.colored stderr "$message" BOLD RED)" >&2
+}
+
+APPSPEC.init-terminal() {
+  if [[ -t 1 ]]; then
+    stdout_terminal=true
+  fi
+  if [[ -t 2 ]]; then
+    stderr_terminal=true
+  fi
+}
+
+
 APPSPEC.cmd_help() {
-  echo help
   source "$APPSPECDIR/lib/help"
   COMMANDS=("${COMMANDS[@]:1}")
   if [[ -n "$COMMANDS" ]]; then
@@ -216,7 +282,7 @@ shift_arg() {
 }
 
 debug() {
-  $DEBUG && echo $@
+  $DEBUG && APPSPEC.colorize stderr "$@" DARKGRAY
 }
 EOM
 
@@ -261,7 +327,7 @@ EOM
             my $global_opt_short = '';
             if (@$options) {
                 ($local_declare, $global_opt_long, $global_opt_short)
-                    = $self->generate_options(undef, $options);
+                    = $self->generate_options($options);
             }
 
 
@@ -314,7 +380,7 @@ EOM
 }
 
 sub generate_options {
-    my ($self, undef, $options) = @_;
+    my ($self, $options) = @_;
 
     my $local_declare = '';
     my $long = <<"EOM";
@@ -428,6 +494,21 @@ EOM
 EOM
 
     return ($local_declare, $long), $short;
+}
+
+sub ansi_colors {
+    return <<'EOM';
+declare APPSPEC_COLOR_BOLD='\x1b[1m'
+declare APPSPEC_COLOR_RED='\x1b[31m'
+declare APPSPEC_COLOR_ERROR="$GIT_HUB_COLOR_RED$GIT_HUB_COLOR_BOLD"
+declare APPSPEC_COLOR_GREEN='\x1b[32m'
+declare APPSPEC_COLOR_CYAN='\x1b[36m'
+declare APPSPEC_COLOR_MAGENTA='\x1b[35m'
+declare APPSPEC_COLOR_YELLOW='\x1b[33m'
+declare APPSPEC_COLOR_DARKGRAY='\x1b[90m'
+declare APPSPEC_NO_COLOR='\x1b[0m'
+
+EOM
 }
 
 1;

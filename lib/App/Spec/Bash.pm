@@ -157,7 +157,7 @@ APPSPEC.run() {
 
 APPSPEC.run-op() {
   if (( \${#ERRORS[*]} > 0 )); then
-    APPSPEC.cmd_help
+    APPSPEC.show_help
     APPSPEC.error "\${ERRORS[*]}"
     exit 1
   else
@@ -175,8 +175,7 @@ APPSPEC.parse() {
   debug "ARGV: \${argv[*]}"
 $local_declare
   if [[ \${#argv} -eq 0 ]]; then
-      debug "MISSING subcommand"
-      ERRORS+=("missing subcommand")
+      APPSPEC.add-error "missing subcommand"
       APPSPEC.run-op
       return
   fi
@@ -254,6 +253,11 @@ APPSPEC.error() {
     echo -e "$(APPSPEC.colored stderr "$message" BOLD RED)" >&2
 }
 
+APPSPEC.add-error() {
+    debug "$1"
+    ERRORS+=("$1")
+}
+
 APPSPEC.init-terminal() {
   if [[ -t 1 ]]; then
     stdout_terminal=true
@@ -265,8 +269,14 @@ APPSPEC.init-terminal() {
 
 
 APPSPEC.cmd_help() {
-  source "$APPSPECDIR/lib/help"
+  debug "======== APPSPEC.cmd_help"
   COMMANDS=("${COMMANDS[@]:1}")
+  APPSPEC.show_help
+}
+
+APPSPEC.show_help() {
+  source "$APPSPECDIR/lib/help"
+  debug "======== APPSPEC.show_help"
   if [[ -n "$COMMANDS" ]]; then
     local func="${COMMANDS[*]}"
     func="${func/ /-}"
@@ -304,6 +314,10 @@ EOM
 
             my $spec = $subcommands->{ $name };
             my $sub = $spec->subcommands;
+            my $op = $spec->op || '';
+
+            my $sreq = ($spec->subcommand_required // 1) && $sub && ! $op ? 1 : 0;
+
             my $subcmds = '';
             if ($sub) {
                 $subcmds = $self->generate_subcommands(
@@ -312,7 +326,6 @@ EOM
                     commands => [@$commands, $name],
                 );
             }
-            my $op = $spec->op || '';
             if ($op) {
                 $op = <<"EOM";
       if [[ -z "\$OP" ]]; then
@@ -321,11 +334,19 @@ EOM
       fi
 EOM
             }
+            elsif ($sreq) {
+                $op = <<"EOM";
+      if [[ -z "\$OP" ]]; then
+        APPSPEC.add-error "missing subcommand"
+        APPSPEC.run-op
+      fi
+EOM
+            }
             my $options = $spec->options;
             my $local_declare = '';
             my $global_opt_long = '';
             my $global_opt_short = '';
-            if (@$options) {
+            if (1 or @$options) {
                 ($local_declare, $global_opt_long, $global_opt_short)
                     = $self->generate_options($options);
             }
@@ -334,7 +355,7 @@ EOM
             my $funcname = join '-', (@$commands, $name);
             $case .= <<"EOM";
     $name)
-      debug COMMAND $name
+      debug "COMMAND $name"
       COMMANDS+=("$name")
 $local_declare
       shift_arg
@@ -346,7 +367,9 @@ EOM
 
             my $function = <<"EOM";
 APPSPEC.parse-$funcname() {
-  while [[ \${#argv} > 0 ]]; do
+  [[ \${#argv} -eq 0 ]] && return
+
+  while [[ \${#argv} -gt 0 ]]; do
     case "\${argv[0]}" in
 $global_opt_long
     -*)
@@ -368,8 +391,7 @@ EOM
     }
     $code .= <<"EOM";
     *)
-      debug "UNKNOWN cmd \${argv[0]}"
-      ERRORS+=("unknown subcommand \${argv[0]}")
+      APPSPEC.add-error "unknown subcommand \${argv[0]}"
       shift_arg
       APPSPEC.run-op
       return
@@ -385,19 +407,20 @@ sub generate_options {
     my $local_declare = '';
     my $long = <<"EOM";
 EOM
-    my $short = <<"EOM";
-      local i arg=\${argv[0]/-/}
-      for (( i=0; i < "\${#arg}"; i++ )); do
-        local char="\${arg:\$i:1}"
-        value="\${arg:\$i+1}"
-        if (( \$i+1 == \${#arg} )); then
+    my $short_preface = <<'EOM';
+      local i arg=${argv[0]/-/}
+      for (( i=0; i < "${#arg}"; i++ )); do
+        local char="${arg:$i:1}"
+        value="${arg:$i+1}"
+        if (( $i+1 == ${#arg} )); then
           shift_arg
-          value="\${argv[0]}"
+          value="${argv[0]}"
         fi
-        debug "processing short \$char. arg=\$arg value=\$value"
-        case "\$char" in
+        debug "processing short $char. arg=$arg value=$value"
+        case "$char" in
 EOM
 
+    my $short = '';
     for my $option (@$options) {
         my $name = $option->name;
         my $bashname = "OPT_" . uc($name);
@@ -476,22 +499,32 @@ EOM
 
     $long .= <<"EOM";
     --*)
-        debug "!UNKNOWN OPTION \${argv[0]}"
-        ERRORS+=("unknown option \${argv[0]}")
+        APPSPEC.add-error "unknown option \${argv[0]}"
         shift_arg
         break
     ;;
 EOM
-    $short .= <<"EOM";
+    if ($short) {
+        $short .= <<"EOM";
         *)
-          debug "!UNKNOWN option -\$char"
-          ERRORS+=("unknown option -\$char")
+          APPSPEC.add-error "unknown option -\$char"
           shift_arg
           break
         ;;
         esac
       done
 EOM
+          $short = $short_preface . $short;
+    }
+    else {
+        $short = <<'EOM';
+        APPSPEC.add-error "unknown option ${argv[0]}"
+        shift_arg
+        break
+EOM
+    }
+          shift_arg
+          break
 
     return ($local_declare, $long), $short;
 }

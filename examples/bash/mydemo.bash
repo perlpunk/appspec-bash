@@ -1,6 +1,6 @@
 #!bash
 
-# Generated with perl module App::Spec v0.011
+# Generated with perl module App::Spec v0.012
 
 _mydemo() {
 
@@ -23,7 +23,7 @@ _mydemo() {
 
     0)
         __comp_current_options || return
-        __mydemo_dynamic_comp 'commands' 'help'$'\t''Show command help'$'\n''nested1'$'\t''Nested subcommand 1'$'\n''test1'$'\t''Test command'
+        __mydemo_dynamic_comp 'commands' 'help'$'\t''Show command help'$'\n''nested1'$'\t''Nested subcommand 1'$'\n''service'$'\t''Start and stop services'$'\n''test1'$'\t''Test command'
 
     ;;
     *)
@@ -36,7 +36,7 @@ _mydemo() {
 
         1)
             __comp_current_options || return
-            __mydemo_dynamic_comp 'commands' 'nested1'$'\n''test1'
+            __mydemo_dynamic_comp 'commands' 'nested1'$'\n''service'$'\n''test1'
 
         ;;
         *)
@@ -55,6 +55,39 @@ _mydemo() {
             # subcmds
             case ${MYWORDS[2]} in
               nested2)
+                __mydemo_handle_options_flags
+                __comp_current_options true || return # no subcmds, no params/opts
+              ;;
+            esac
+
+            ;;
+            esac
+          ;;
+          service)
+            __mydemo_handle_options_flags
+            case $INDEX in
+
+            2)
+                __comp_current_options || return
+                __mydemo_dynamic_comp 'commands' 'list'$'\n''start'$'\n''status'$'\n''stop'
+
+            ;;
+            *)
+            # subcmds
+            case ${MYWORDS[2]} in
+              list)
+                __mydemo_handle_options_flags
+                __comp_current_options true || return # no subcmds, no params/opts
+              ;;
+              start)
+                __mydemo_handle_options_flags
+                __comp_current_options true || return # no subcmds, no params/opts
+              ;;
+              status)
+                __mydemo_handle_options_flags
+                __comp_current_options true || return # no subcmds, no params/opts
+              ;;
+              stop)
                 __mydemo_handle_options_flags
                 __comp_current_options true || return # no subcmds, no params/opts
               ;;
@@ -87,6 +120,78 @@ _mydemo() {
           nested2)
             __mydemo_handle_options_flags
             __comp_current_options true || return # no subcmds, no params/opts
+          ;;
+        esac
+
+        ;;
+        esac
+      ;;
+      service)
+        __mydemo_handle_options_flags
+        case $INDEX in
+
+        1)
+            __comp_current_options || return
+            __mydemo_dynamic_comp 'commands' 'list'$'\t''List services'$'\n''start'$'\t''Start'$'\n''status'$'\t''Status'$'\n''stop'$'\t''Stop'
+
+        ;;
+        *)
+        # subcmds
+        case ${MYWORDS[1]} in
+          list)
+            __mydemo_handle_options_flags
+            __comp_current_options true || return # no subcmds, no params/opts
+          ;;
+          start)
+            __mydemo_handle_options_flags
+            case ${MYWORDS[$INDEX-1]} in
+
+            esac
+            case $INDEX in
+              2)
+                  __comp_current_options || return
+                    _mydemo_service_start_param_service_completion
+              ;;
+
+
+            *)
+                __comp_current_options || return
+            ;;
+            esac
+          ;;
+          status)
+            __mydemo_handle_options_flags
+            case ${MYWORDS[$INDEX-1]} in
+
+            esac
+            case $INDEX in
+              2)
+                  __comp_current_options || return
+                    _mydemo_service_status_param_service_completion
+              ;;
+
+
+            *)
+                __comp_current_options || return
+            ;;
+            esac
+          ;;
+          stop)
+            __mydemo_handle_options_flags
+            case ${MYWORDS[$INDEX-1]} in
+
+            esac
+            case $INDEX in
+              2)
+                  __comp_current_options || return
+                    _mydemo_service_stop_param_service_completion
+              ;;
+
+
+            *)
+                __comp_current_options || return
+            ;;
+            esac
           ;;
         esac
 
@@ -139,6 +244,21 @@ _mydemo_compreply() {
     fi
 }
 
+_mydemo_service_start_param_service_completion() {
+    local CURRENT_WORD="${words[$cword]}"
+    local param_service="$(mydemo service list | cut -d ':' -f 1)"
+    _mydemo_compreply "$param_service"
+}
+_mydemo_service_status_param_service_completion() {
+    local CURRENT_WORD="${words[$cword]}"
+    local param_service="$(mydemo service list | cut -d ':' -f 1)"
+    _mydemo_compreply "$param_service"
+}
+_mydemo_service_stop_param_service_completion() {
+    local CURRENT_WORD="${words[$cword]}"
+    local param_service="$(mydemo service list | cut -d ':' -f 1)"
+    _mydemo_compreply "$param_service"
+}
 
 __mydemo_dynamic_comp() {
     local argname="$1"

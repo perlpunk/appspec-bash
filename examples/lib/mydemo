@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
-docker_status=active
-cups_status=active
-libvirtd_status=inactive
-cups_status=error
+SERVICES=(cups docker libvirtd nginx)
+
+declare docker_status=active
+declare cups_status=active
+declare libvirtd_status=inactive
+declare nginx_status=error
+
+declare status_active=(GREEN)
+declare status_inactive=()
+declare status_error=(BOLD RED)
 
 MyDemo.test1() {
     APPSPEC.say "MyDemo.test1" BOLD MAGENTA
@@ -25,6 +31,24 @@ MyDemo.nested1() {
 MyDemo.nested2() {
     APPSPEC.say "MyDemo.nested2" BOLD GREEN
 }
+
+MyDemo.start() {
+    APPSPEC.say "Start service" BOLD CYAN
+}
+
+MyDemo.list() {
+    local varname status varname colors
+    for i in ${SERVICES[@]}; do
+        varname=$i"_status"
+        status="${!varname}"
+        varname="status_"$status"[@]"
+        colors=(${!varname})
+        colorized="$(APPSPEC.colored stdout "$status" ${colors[@]})"
+        echo -e "$i: $colorized"
+    done
+}
+
+
 
 # TODO shouldn't be necessary
 MyDemo.cmd_help() {

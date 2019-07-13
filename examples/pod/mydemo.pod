@@ -32,6 +32,50 @@ Nested subcommand 1
 Nested subcommand 2
 
 
+=head3  service
+
+    mydemo  service <subcommands>
+
+Start and stop services
+
+
+=head3 service list
+
+    mydemo service list
+
+List services
+
+
+=head3 service start
+
+    mydemo service start [<service>]
+
+Start
+
+Parameters:
+
+    service    
+
+=head3 service status
+
+    mydemo service status [<service>]
+
+Status
+
+Parameters:
+
+    service    
+
+=head3 service stop
+
+    mydemo service stop [<service>]
+
+Stop
+
+Parameters:
+
+    service    
+
 =head3  test1
 
     mydemo  test1 [options]

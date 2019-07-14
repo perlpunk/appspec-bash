@@ -50,12 +50,12 @@ APPSPEC.parse() {
       declare OPT_VERSION=false
       declare OPT_HELP=false
 
-  if [[ ${#argv} -eq 0 ]]; then
+  if [[ ${#argv[@]} -eq 0 ]]; then
       APPSPEC.add-error "missing subcommand"
       APPSPEC.run-op
       return
   fi
-  while [[ ${#argv} > 0 ]]; do
+  while [[ ${#argv[@]} > 0 ]]; do
     debug "processing ${argv[0]}..."
     case "${argv[0]}" in
     --version)
@@ -185,9 +185,9 @@ APPSPEC.parse() {
 }
 
 APPSPEC.parse-help-nested1-nested2() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -219,9 +219,9 @@ APPSPEC.parse-help-nested1-nested2() {
 }
 
 APPSPEC.parse-help-nested1() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -262,9 +262,9 @@ APPSPEC.parse-help-nested1() {
 }
 
 APPSPEC.parse-help-service-list() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -296,9 +296,9 @@ APPSPEC.parse-help-service-list() {
 }
 
 APPSPEC.parse-help-service-start() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -330,9 +330,9 @@ APPSPEC.parse-help-service-start() {
 }
 
 APPSPEC.parse-help-service-status() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -364,9 +364,9 @@ APPSPEC.parse-help-service-status() {
 }
 
 APPSPEC.parse-help-service-stop() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -398,9 +398,9 @@ APPSPEC.parse-help-service-stop() {
 }
 
 APPSPEC.parse-help-service() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -468,9 +468,9 @@ APPSPEC.parse-help-service() {
 }
 
 APPSPEC.parse-help-test1() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -502,9 +502,9 @@ APPSPEC.parse-help-test1() {
 }
 
 APPSPEC.parse-help() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --all)
         debug "LONG OPTION all"
@@ -569,9 +569,9 @@ APPSPEC.parse-help() {
 }
 
 APPSPEC.parse-nested1-nested2() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -596,9 +596,9 @@ APPSPEC.parse-nested1-nested2() {
 }
 
 APPSPEC.parse-nested1() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -643,9 +643,9 @@ APPSPEC.parse-nested1() {
 }
 
 APPSPEC.parse-service-list() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -670,9 +670,9 @@ APPSPEC.parse-service-list() {
 }
 
 APPSPEC.parse-service-start() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -697,9 +697,9 @@ APPSPEC.parse-service-start() {
 }
 
 APPSPEC.parse-service-status() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -724,9 +724,9 @@ APPSPEC.parse-service-status() {
 }
 
 APPSPEC.parse-service-stop() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -751,9 +751,9 @@ APPSPEC.parse-service-stop() {
 }
 
 APPSPEC.parse-service() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --) shift_arg; break
     ;;
@@ -837,9 +837,9 @@ APPSPEC.parse-service() {
 }
 
 APPSPEC.parse-test1() {
-  [[ ${#argv} -eq 0 ]] && return
+  [[ ${#argv[@]} -eq 0 ]] && return
 
-  while [[ ${#argv} -gt 0 ]]; do
+  while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --flag-a)
         debug "LONG OPTION flag-a"

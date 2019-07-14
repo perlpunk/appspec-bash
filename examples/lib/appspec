@@ -70,6 +70,8 @@ APPSPEC.parse() {
         shift_arg
 
     ;;
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -187,6 +189,8 @@ APPSPEC.parse-help-nested1-nested2() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -219,6 +223,8 @@ APPSPEC.parse-help-nested1() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -260,6 +266,8 @@ APPSPEC.parse-help-service-list() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -292,6 +300,8 @@ APPSPEC.parse-help-service-start() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -324,6 +334,8 @@ APPSPEC.parse-help-service-status() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -356,6 +368,8 @@ APPSPEC.parse-help-service-stop() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -388,6 +402,8 @@ APPSPEC.parse-help-service() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -456,6 +472,8 @@ APPSPEC.parse-help-test1() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -493,6 +511,8 @@ APPSPEC.parse-help() {
         OPT_ALL=true
         shift_arg
 
+    ;;
+    --) shift_arg; break
     ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
@@ -553,6 +573,8 @@ APPSPEC.parse-nested1-nested2() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -578,6 +600,8 @@ APPSPEC.parse-nested1() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -623,6 +647,8 @@ APPSPEC.parse-service-list() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -648,6 +674,8 @@ APPSPEC.parse-service-start() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -673,6 +701,8 @@ APPSPEC.parse-service-status() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -698,6 +728,8 @@ APPSPEC.parse-service-stop() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -723,6 +755,8 @@ APPSPEC.parse-service() {
 
   while [[ ${#argv} -gt 0 ]]; do
     case "${argv[0]}" in
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"
         shift_arg
@@ -852,6 +886,8 @@ APPSPEC.parse-test1() {
         OPT_TEST_G="${argv[0]}"
         shift_arg
 
+    ;;
+    --) shift_arg; break
     ;;
     --*)
         APPSPEC.add-error "unknown option ${argv[0]}"

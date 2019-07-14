@@ -498,6 +498,8 @@ EOM
     }
 
     $long .= <<"EOM";
+    --) shift_arg; break
+    ;;
     --*)
         APPSPEC.add-error "unknown option \${argv[0]}"
         shift_arg

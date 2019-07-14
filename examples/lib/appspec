@@ -206,9 +206,8 @@ APPSPEC.parse-help-nested1-nested2() {
 
     # SUBCOMMANDS
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      debug "end of options and subcommands"
       shift_arg
-      APPSPEC.run-op
       return
     ;;
 
@@ -283,9 +282,8 @@ APPSPEC.parse-help-service-list() {
 
     # SUBCOMMANDS
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      debug "end of options and subcommands"
       shift_arg
-      APPSPEC.run-op
       return
     ;;
 
@@ -317,9 +315,8 @@ APPSPEC.parse-help-service-start() {
 
     # SUBCOMMANDS
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      debug "end of options and subcommands"
       shift_arg
-      APPSPEC.run-op
       return
     ;;
 
@@ -351,9 +348,8 @@ APPSPEC.parse-help-service-status() {
 
     # SUBCOMMANDS
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      debug "end of options and subcommands"
       shift_arg
-      APPSPEC.run-op
       return
     ;;
 
@@ -385,9 +381,8 @@ APPSPEC.parse-help-service-stop() {
 
     # SUBCOMMANDS
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      debug "end of options and subcommands"
       shift_arg
-      APPSPEC.run-op
       return
     ;;
 
@@ -489,9 +484,8 @@ APPSPEC.parse-help-test1() {
 
     # SUBCOMMANDS
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      debug "end of options and subcommands"
       shift_arg
-      APPSPEC.run-op
       return
     ;;
 
@@ -589,6 +583,12 @@ APPSPEC.parse-nested1-nested2() {
     ;;
 
     # SUBCOMMANDS
+    *)
+      debug "end of options and subcommands"
+      shift_arg
+      return
+    ;;
+
 
     esac
   done
@@ -663,6 +663,12 @@ APPSPEC.parse-service-list() {
     ;;
 
     # SUBCOMMANDS
+    *)
+      debug "end of options and subcommands"
+      shift_arg
+      return
+    ;;
+
 
     esac
   done
@@ -690,6 +696,12 @@ APPSPEC.parse-service-start() {
     ;;
 
     # SUBCOMMANDS
+    *)
+      debug "end of options and subcommands"
+      shift_arg
+      return
+    ;;
+
 
     esac
   done
@@ -717,6 +729,12 @@ APPSPEC.parse-service-status() {
     ;;
 
     # SUBCOMMANDS
+    *)
+      debug "end of options and subcommands"
+      shift_arg
+      return
+    ;;
+
 
     esac
   done
@@ -744,6 +762,12 @@ APPSPEC.parse-service-stop() {
     ;;
 
     # SUBCOMMANDS
+    *)
+      debug "end of options and subcommands"
+      shift_arg
+      return
+    ;;
+
 
     esac
   done
@@ -960,6 +984,12 @@ APPSPEC.parse-test1() {
     ;;
 
     # SUBCOMMANDS
+    *)
+      debug "end of options and subcommands"
+      shift_arg
+      return
+    ;;
+
 
     esac
   done

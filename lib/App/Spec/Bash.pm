@@ -301,7 +301,7 @@ EOM
 
 sub generate_subcommands {
     my ($self, %args) = @_;
-    my $subcommands = $args{subcommands};
+    my $subcommands = $args{subcommands} || {};
     my $functions = $args{functions};
     my $commands = $args{commands};
     my $code;
@@ -318,14 +318,11 @@ EOM
 
             my $sreq = ($spec->subcommand_required // 1) && $sub && ! $op ? 1 : 0;
 
-            my $subcmds = '';
-            if ($sub) {
-                $subcmds = $self->generate_subcommands(
-                    subcommands => $sub,
-                    functions => $functions,
-                    commands => [@$commands, $name],
-                );
-            }
+            my $subcmds = $self->generate_subcommands(
+                subcommands => $sub,
+                functions => $functions,
+                commands => [@$commands, $name],
+            );
             if ($op) {
                 $op = <<"EOM";
       if [[ -z "\$OP" ]]; then
@@ -343,13 +340,8 @@ EOM
 EOM
             }
             my $options = $spec->options;
-            my $local_declare = '';
-            my $global_opt_long = '';
-            my $global_opt_short = '';
-            if (1 or @$options) {
-                ($local_declare, $global_opt_long, $global_opt_short)
-                    = $self->generate_options($options);
-            }
+            my ($local_declare, $global_opt_long, $global_opt_short)
+                = $self->generate_options($options);
 
 
             my $funcname = join '-', (@$commands, $name);
@@ -388,8 +380,7 @@ EOM
         }
         $code .= $case;
 
-    }
-    $code .= <<"EOM";
+        $code .= <<"EOM";
     *)
       APPSPEC.add-error "unknown subcommand \${argv[0]}"
       shift_arg
@@ -398,6 +389,17 @@ EOM
     ;;
 
 EOM
+    }
+    else {
+        $code .= <<"EOM";
+    *)
+      debug "end of options and subcommands"
+      shift_arg
+      return
+    ;;
+
+EOM
+    }
     return $code;
 }
 

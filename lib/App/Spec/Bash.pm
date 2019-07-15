@@ -162,7 +162,7 @@ DEBUG=false
 
 APPSPEC.run() {
   APPSPEC.init-terminal
-  APPSPEC.parse \$@
+  APPSPEC.parse "\$@"
 }
 
 APPSPEC.run-op() {
@@ -177,7 +177,7 @@ APPSPEC.run-op() {
   fi
   if [[ \${#argv[@]} -gt 0 ]]; then
     debug "leftover args in ARGV: (\${argv[*]})"
-    ARGV=(\${argv[@]})
+    ARGV=("\${argv[@]}")
   fi
   debug "Running $class.\$OP"
   if [[ -n "\$OP" ]]; then
@@ -188,7 +188,7 @@ APPSPEC.run-op() {
 }
 
 APPSPEC.parse() {
-  local argv=(\$@)
+  local argv=("\$@")
   debug "ARGV: \${argv[*]}"
 $local_declare
   if [[ \${#argv[@]} -eq 0 ]]; then

@@ -6,4 +6,4 @@ APPSPECDIR="$DIR/.."
 source "$APPSPECDIR/lib/appspec"
 source "$APPSPECDIR/lib/mydemo"
 
-APPSPEC.run $@
+APPSPEC.run "$@"

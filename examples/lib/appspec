@@ -29,7 +29,7 @@ DEBUG=false
 
 APPSPEC.run() {
   APPSPEC.init-terminal
-  APPSPEC.parse $@
+  APPSPEC.parse "$@"
 }
 
 APPSPEC.run-op() {
@@ -44,7 +44,7 @@ APPSPEC.run-op() {
   fi
   if [[ ${#argv[@]} -gt 0 ]]; then
     debug "leftover args in ARGV: (${argv[*]})"
-    ARGV=(${argv[@]})
+    ARGV=("${argv[@]}")
   fi
   debug "Running MyDemo.$OP"
   if [[ -n "$OP" ]]; then
@@ -55,7 +55,7 @@ APPSPEC.run-op() {
 }
 
 APPSPEC.parse() {
-  local argv=($@)
+  local argv=("$@")
   debug "ARGV: ${argv[*]}"
       declare OPT_VERSION=false
       declare OPT_HELP=false

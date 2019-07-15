@@ -9,11 +9,10 @@ declare nginx_status=error
 
 declare status_active=(GREEN)
 declare status_inactive=()
-declare status_error=(BOLD RED)
+declare status_error=(RED)
 
 MyDemo.test1() {
     APPSPEC.say "MyDemo.test1" BOLD MAGENTA
-    APPSPEC.say "MyDemo.test1"
     echo "=== OPTION flag-a '$OPT_FLAG_A'"
     echo "=== OPTION flag-b '$OPT_FLAG_B'"
     echo "=== OPTION flag-c '$OPT_FLAG_C'"
@@ -21,7 +20,6 @@ MyDemo.test1() {
     echo "=== OPTION test-e '$OPT_TEST_E'"
     echo "=== OPTION test-f '${OPT_TEST_F[*]}'"
     echo "=== OPTION test-g '$OPT_TEST_G'"
-
 }
 
 MyDemo.nested1() {
@@ -33,21 +31,36 @@ MyDemo.nested2() {
 }
 
 MyDemo.start() {
-    APPSPEC.say "Start service" BOLD CYAN
+    APPSPEC.say "Starting service '$PARAM_SERVICE'..." BOLD MAGENTA
+    if $OPT_RESTART; then
+      APPSPEC.say "(Restarting if running)"
+    fi
+}
+MyDemo.stop() {
+    APPSPEC.say "Stooping service '$PARAM_SERVICE'..." BOLD CYAN
+}
+MyDemo.status() {
+    APPSPEC.say "Status service '$PARAM_SERVICE':" BOLD
+    output-service "$PARAM_SERVICE"
+}
+
+output-service() {
+    local service="$1"
+    local colors colorized
+    local varname="$service"_status
+    local status="${!varname}"
+    varname="status_"$status"[@]"
+    colors=(${!varname})
+    colorized="$(APPSPEC.colored stdout "$status" ${colors[@]})"
+    echo -e "$service: $colorized"
 }
 
 MyDemo.list() {
     local varname status varname colors
     for i in ${SERVICES[@]}; do
-        varname=$i"_status"
-        status="${!varname}"
-        varname="status_"$status"[@]"
-        colors=(${!varname})
-        colorized="$(APPSPEC.colored stdout "$status" ${colors[@]})"
-        echo -e "$i: $colorized"
+        output-service "$i"
     done
 }
-
 
 
 # TODO shouldn't be necessary

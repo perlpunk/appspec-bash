@@ -44,6 +44,8 @@ subcommands:
       start:
         summary: Start
         op: start
+        options:
+        - restart|r --Restart if already running
         parameters:
         - &service
           name: service

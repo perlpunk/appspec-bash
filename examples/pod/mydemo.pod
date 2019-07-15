@@ -48,33 +48,37 @@ List services
 
 =head3 service start
 
-    mydemo service start [<service>]
+    mydemo service start [options] <service>
 
 Start
 
+Options:
+
+    --restart -r    Restart if already running (flag)
+
 Parameters:
 
-    service    
+    service  *  Service name
 
 =head3 service status
 
-    mydemo service status [<service>]
+    mydemo service status <service>
 
 Status
 
 Parameters:
 
-    service    
+    service  *  Service name
 
 =head3 service stop
 
-    mydemo service stop [<service>]
+    mydemo service stop <service>
 
 Stop
 
 Parameters:
 
-    service    
+    service  *  Service name
 
 =head3  test1
 

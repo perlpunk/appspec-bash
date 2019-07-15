@@ -111,12 +111,19 @@ sub generate_app {
 
     my @all_options;
     my $options = $spec->options;
+    my $params = $spec->parameters;
     my $local_declare = '';
     my $global_opt_long = '';
     my $global_opt_short = '';
     if (@$options) {
         ($local_declare, $global_opt_long, $global_opt_short)
             = $self->generate_options($options);
+    }
+    my $parse_params = '';
+    if (@$params) {
+        my $funcname = '';
+        my ($params_declare, $parse_params) = $self->generate_params($funcname, $params);
+        $local_declare .= $params_declare;
     }
     push @all_options, @$options;
 
@@ -141,10 +148,13 @@ sub generate_app {
 # App::Spec::Bash v$appspec_bash_version
 # $name - $title
 
+set -e
+
 declare OP=
 declare -a ERRORS=()
 declare -a COMMANDS=()
 declare stdout_terminal=false stderr_terminal=false
+declare END_OF_OPTIONS=false
 $colors
 
 DEBUG=false
@@ -158,11 +168,18 @@ APPSPEC.run() {
 APPSPEC.run-op() {
   if (( \${#ERRORS[*]} > 0 )); then
     APPSPEC.show_help
-    APPSPEC.error "\${ERRORS[*]}"
+    for i in "\${ERRORS[@]}"; do
+      APPSPEC.error "\$i"
+    done
     exit 1
   else
     debug "OP: \$OP"
   fi
+  if [[ \${#argv[@]} -gt 0 ]]; then
+    debug "leftover args in ARGV: (\${argv[*]})"
+    ARGV=(\${argv[@]})
+  fi
+  debug "Running $class.\$OP"
   if [[ -n "\$OP" ]]; then
     $class.\$OP
   else
@@ -175,7 +192,7 @@ APPSPEC.parse() {
   debug "ARGV: \${argv[*]}"
 $local_declare
   if [[ \${#argv[@]} -eq 0 ]]; then
-      APPSPEC.add-error "missing subcommand"
+      APPSPEC.add-error "Missing subcommand"
       APPSPEC.run-op
       return
   fi
@@ -217,7 +234,7 @@ APPSPEC.colored() {
     local colornames=($@)
     local varname value colored=
 
-    for i in ${colornames[@]}; do
+    for i in "${colornames[@]}"; do
         varname="APPSPEC_COLOR_$i"
         value="${!varname}"
         colored+="$value"
@@ -292,7 +309,7 @@ shift_arg() {
 }
 
 debug() {
-  $DEBUG && APPSPEC.colorize stderr "$@" DARKGRAY
+  $DEBUG && APPSPEC.colorize stderr "$@" DARKGRAY || true
 }
 EOM
 
@@ -334,7 +351,7 @@ EOM
             elsif ($sreq) {
                 $op = <<"EOM";
       if [[ -z "\$OP" ]]; then
-        APPSPEC.add-error "missing subcommand"
+        APPSPEC.add-error "Missing subcommand"
         APPSPEC.run-op
       fi
 EOM
@@ -342,16 +359,34 @@ EOM
             my $options = $spec->options;
             my ($local_declare, $global_opt_long, $global_opt_short)
                 = $self->generate_options($options);
-
-
+            my $params = $spec->parameters;
+            my $parse_params = '';
             my $funcname = join '-', (@$commands, $name);
+            if (@$params) {
+                (my $params_declare, $parse_params) = $self->generate_params($funcname, $params);
+                $local_declare .= $params_declare;
+            }
+
+            my $parse_params_call = '';
+            if ($parse_params) {
+                my $parse_params_func = <<"EOM";
+APPSPEC.params-$funcname() {
+  debug "APPSPEC.params-$funcname()"
+$parse_params
+}
+EOM
+                push @$functions, $parse_params_func;
+                $parse_params_call = "      APPSPEC.params-$funcname";
+            }
+
+
             $case .= <<"EOM";
     $name)
-      debug "COMMAND $name"
       COMMANDS+=("$name")
 $local_declare
       shift_arg
       APPSPEC.parse-$funcname
+$parse_params_call
 $op
       return
     ;;
@@ -359,15 +394,15 @@ EOM
 
             my $function = <<"EOM";
 APPSPEC.parse-$funcname() {
+  debug "APPSPEC.parse-$funcname()"
   [[ \${#argv[@]} -eq 0 ]] && return
 
   while [[ \${#argv[@]} -gt 0 ]]; do
-    case "\${argv[0]}" in
-$global_opt_long
-    -*)
-$global_opt_short
-    ;;
+    if APPSPEC.parse-options-$funcname; then
+        break
+    fi
 
+    case "\${argv[0]}" in
     # SUBCOMMANDS
 $subcmds
     esac
@@ -375,14 +410,33 @@ $subcmds
 
 }
 EOM
+            my $function2 = <<"EOM";
+APPSPEC.parse-options-$funcname() {
+  debug "APPSPEC.parse-options-$funcname()"
+  \$END_OF_OPTIONS && return 1
+  while [[ \${#argv[@]} -gt 0 ]]; do
+    case "\${argv[0]}" in
+$global_opt_long
+    -*)
+$global_opt_short
+    ;;
+
+    *) return 1
+    ;;
+    esac
+  done
+  return 0
+}
+EOM
             push @$functions, $function;
+            push @$functions, $function2;
 
         }
         $code .= $case;
 
         $code .= <<"EOM";
     *)
-      APPSPEC.add-error "unknown subcommand \${argv[0]}"
+      APPSPEC.add-error "Unknown subcommand '\${argv[0]}'"
       shift_arg
       APPSPEC.run-op
       return
@@ -392,12 +446,8 @@ EOM
     }
     else {
         $code .= <<"EOM";
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return
     ;;
-
 EOM
     }
     return $code;
@@ -500,10 +550,10 @@ EOM
     }
 
     $long .= <<"EOM";
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option \${argv[0]}"
+        APPSPEC.add-error "Unknown option '\${argv[0]}'"
         shift_arg
         break
     ;;
@@ -511,7 +561,7 @@ EOM
     if ($short) {
         $short .= <<"EOM";
         *)
-          APPSPEC.add-error "unknown option -\$char"
+          APPSPEC.add-error "Unknown option '-\$char'"
           shift_arg
           break
         ;;
@@ -522,15 +572,67 @@ EOM
     }
     else {
         $short = <<'EOM';
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 EOM
     }
-          shift_arg
-          break
 
     return ($local_declare, $long), $short;
+}
+
+sub generate_params {
+    my ($self, $funcname, $params) = @_;
+
+    my $declare = '';
+    my $check = '';
+    my $parse = <<'EOM';
+  while [[ ${#argv[@]} -gt 0 ]]; do
+EOM
+    for my $p (@$params) {
+        my $name = $p->name;
+        my $bashname = "PARAM_" . uc($name);
+        $bashname =~ tr/0-9a-zA-Z_/_/c;
+        if ($p->multiple) {
+            $declare .= "      declare -a $bashname=()";
+            $parse .= <<"EOM";
+    if APPSPEC.parse-options-$funcname; then
+        break
+    fi
+    $bashname+=(\${argv[@]})
+    argv=()
+EOM
+        }
+        else {
+            $declare .= "      declare $bashname";
+            $parse .= <<"EOM";
+    if APPSPEC.parse-options-$funcname; then
+        break
+    fi
+    $bashname="\${argv[0]}"
+    shift_arg
+EOM
+        }
+        if ($p->required) {
+            $declare .= " # REQUIRED";
+            $check .= <<"EOM";
+  if [[ -z "\$$bashname" ]]; then
+    APPSPEC.add-error "Missing required parameter '$name'"
+  fi
+EOM
+        }
+        $declare .= "\n";
+
+    }
+    $parse .= "    break\n";
+    $parse .= "  done\n";
+    $parse .= <<"EOM";
+  if APPSPEC.parse-options-$funcname; then
+    true
+  fi
+EOM
+    $parse .= $check;
+    return ($declare, $parse);
 }
 
 sub ansi_colors {

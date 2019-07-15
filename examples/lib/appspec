@@ -5,10 +5,13 @@
 # App::Spec::Bash v0.000
 # mydemo - Demo
 
+set -e
+
 declare OP=
 declare -a ERRORS=()
 declare -a COMMANDS=()
 declare stdout_terminal=false stderr_terminal=false
+declare END_OF_OPTIONS=false
 declare APPSPEC_COLOR_BOLD='\x1b[1m'
 declare APPSPEC_COLOR_RED='\x1b[31m'
 declare APPSPEC_COLOR_ERROR="$GIT_HUB_COLOR_RED$GIT_HUB_COLOR_BOLD"
@@ -32,11 +35,18 @@ APPSPEC.run() {
 APPSPEC.run-op() {
   if (( ${#ERRORS[*]} > 0 )); then
     APPSPEC.show_help
-    APPSPEC.error "${ERRORS[*]}"
+    for i in "${ERRORS[@]}"; do
+      APPSPEC.error "$i"
+    done
     exit 1
   else
     debug "OP: $OP"
   fi
+  if [[ ${#argv[@]} -gt 0 ]]; then
+    debug "leftover args in ARGV: (${argv[*]})"
+    ARGV=(${argv[@]})
+  fi
+  debug "Running MyDemo.$OP"
   if [[ -n "$OP" ]]; then
     MyDemo.$OP
   else
@@ -51,7 +61,7 @@ APPSPEC.parse() {
       declare OPT_HELP=false
 
   if [[ ${#argv[@]} -eq 0 ]]; then
-      APPSPEC.add-error "missing subcommand"
+      APPSPEC.add-error "Missing subcommand"
       APPSPEC.run-op
       return
   fi
@@ -70,10 +80,10 @@ APPSPEC.parse() {
         shift_arg
 
     ;;
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
@@ -100,7 +110,7 @@ APPSPEC.parse() {
 
         ;;
         *)
-          APPSPEC.add-error "unknown option -$char"
+          APPSPEC.add-error "Unknown option '-$char'"
           shift_arg
           break
         ;;
@@ -111,12 +121,12 @@ APPSPEC.parse() {
 
     # SUBCOMMANDS
     help)
-      debug "COMMAND help"
       COMMANDS+=("help")
       declare OPT_ALL=false
 
       shift_arg
       APPSPEC.parse-help
+
       if [[ -z "$OP" ]]; then
         OP=cmd_help
         APPSPEC.run-op
@@ -125,11 +135,11 @@ APPSPEC.parse() {
       return
     ;;
     nested1)
-      debug "COMMAND nested1"
       COMMANDS+=("nested1")
 
       shift_arg
       APPSPEC.parse-nested1
+
       if [[ -z "$OP" ]]; then
         OP=nested1
         APPSPEC.run-op
@@ -138,20 +148,19 @@ APPSPEC.parse() {
       return
     ;;
     service)
-      debug "COMMAND service"
       COMMANDS+=("service")
 
       shift_arg
       APPSPEC.parse-service
+
       if [[ -z "$OP" ]]; then
-        APPSPEC.add-error "missing subcommand"
+        APPSPEC.add-error "Missing subcommand"
         APPSPEC.run-op
       fi
 
       return
     ;;
     test1)
-      debug "COMMAND test1"
       COMMANDS+=("test1")
       declare OPT_FLAG_A=false
       declare OPT_FLAG_B=false
@@ -163,6 +172,7 @@ APPSPEC.parse() {
 
       shift_arg
       APPSPEC.parse-test1
+
       if [[ -z "$OP" ]]; then
         OP=test1
         APPSPEC.run-op
@@ -171,7 +181,7 @@ APPSPEC.parse() {
       return
     ;;
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      APPSPEC.add-error "Unknown subcommand '${argv[0]}'"
       shift_arg
       APPSPEC.run-op
       return
@@ -185,70 +195,73 @@ APPSPEC.parse() {
 }
 
 APPSPEC.parse-help-nested1-nested2() {
+  debug "APPSPEC.parse-help-nested1-nested2()"
   [[ ${#argv[@]} -eq 0 ]] && return
 
   while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-help-nested1-nested2; then
+        break
+    fi
+
     case "${argv[0]}" in
-    --) shift_arg; break
-    ;;
-    --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
-        shift_arg
-        break
-    ;;
-
-    -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
-        shift_arg
-        break
-
-    ;;
-
     # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return
     ;;
-
 
     esac
   done
 
 }
 
-APPSPEC.parse-help-nested1() {
-  [[ ${#argv[@]} -eq 0 ]] && return
-
+APPSPEC.parse-options-help-nested1-nested2() {
+  debug "APPSPEC.parse-options-help-nested1-nested2()"
+  $END_OF_OPTIONS && return 1
   while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
+    *) return 1
+    ;;
+    esac
+  done
+  return 0
+}
+
+APPSPEC.parse-help-nested1() {
+  debug "APPSPEC.parse-help-nested1()"
+  [[ ${#argv[@]} -eq 0 ]] && return
+
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-help-nested1; then
+        break
+    fi
+
+    case "${argv[0]}" in
     # SUBCOMMANDS
     nested2)
-      debug "COMMAND nested2"
       COMMANDS+=("nested2")
 
       shift_arg
       APPSPEC.parse-help-nested1-nested2
 
+
       return
     ;;
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      APPSPEC.add-error "Unknown subcommand '${argv[0]}'"
       shift_arg
       APPSPEC.run-op
       return
@@ -260,197 +273,266 @@ APPSPEC.parse-help-nested1() {
 
 }
 
-APPSPEC.parse-help-service-list() {
-  [[ ${#argv[@]} -eq 0 ]] && return
-
+APPSPEC.parse-options-help-nested1() {
+  debug "APPSPEC.parse-options-help-nested1()"
+  $END_OF_OPTIONS && return 1
   while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
-    # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return 1
     ;;
+    esac
+  done
+  return 0
+}
 
+APPSPEC.parse-help-service-list() {
+  debug "APPSPEC.parse-help-service-list()"
+  [[ ${#argv[@]} -eq 0 ]] && return
+
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-help-service-list; then
+        break
+    fi
+
+    case "${argv[0]}" in
+    # SUBCOMMANDS
+    *) return
+    ;;
 
     esac
   done
 
+}
+
+APPSPEC.parse-options-help-service-list() {
+  debug "APPSPEC.parse-options-help-service-list()"
+  $END_OF_OPTIONS && return 1
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    case "${argv[0]}" in
+    --) shift_arg; END_OF_OPTIONS=true; break
+    ;;
+    --*)
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
+        shift_arg
+        break
+    ;;
+
+    -*)
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
+        shift_arg
+        break
+
+    ;;
+
+    *) return 1
+    ;;
+    esac
+  done
+  return 0
 }
 
 APPSPEC.parse-help-service-start() {
+  debug "APPSPEC.parse-help-service-start()"
   [[ ${#argv[@]} -eq 0 ]] && return
 
   while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-help-service-start; then
+        break
+    fi
+
     case "${argv[0]}" in
-    --) shift_arg; break
+    # SUBCOMMANDS
+    *) return
+    ;;
+
+    esac
+  done
+
+}
+
+APPSPEC.parse-options-help-service-start() {
+  debug "APPSPEC.parse-options-help-service-start()"
+  $END_OF_OPTIONS && return 1
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    case "${argv[0]}" in
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
-    # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return 1
     ;;
-
-
     esac
   done
-
+  return 0
 }
 
 APPSPEC.parse-help-service-status() {
+  debug "APPSPEC.parse-help-service-status()"
   [[ ${#argv[@]} -eq 0 ]] && return
 
   while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-help-service-status; then
+        break
+    fi
+
     case "${argv[0]}" in
-    --) shift_arg; break
+    # SUBCOMMANDS
+    *) return
+    ;;
+
+    esac
+  done
+
+}
+
+APPSPEC.parse-options-help-service-status() {
+  debug "APPSPEC.parse-options-help-service-status()"
+  $END_OF_OPTIONS && return 1
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    case "${argv[0]}" in
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
-    # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return 1
     ;;
-
-
     esac
   done
-
+  return 0
 }
 
 APPSPEC.parse-help-service-stop() {
+  debug "APPSPEC.parse-help-service-stop()"
   [[ ${#argv[@]} -eq 0 ]] && return
 
   while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-help-service-stop; then
+        break
+    fi
+
     case "${argv[0]}" in
-    --) shift_arg; break
-    ;;
-    --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
-        shift_arg
-        break
-    ;;
-
-    -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
-        shift_arg
-        break
-
-    ;;
-
     # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return
     ;;
-
 
     esac
   done
 
 }
 
-APPSPEC.parse-help-service() {
-  [[ ${#argv[@]} -eq 0 ]] && return
-
+APPSPEC.parse-options-help-service-stop() {
+  debug "APPSPEC.parse-options-help-service-stop()"
+  $END_OF_OPTIONS && return 1
   while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
+    *) return 1
+    ;;
+    esac
+  done
+  return 0
+}
+
+APPSPEC.parse-help-service() {
+  debug "APPSPEC.parse-help-service()"
+  [[ ${#argv[@]} -eq 0 ]] && return
+
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-help-service; then
+        break
+    fi
+
+    case "${argv[0]}" in
     # SUBCOMMANDS
     list)
-      debug "COMMAND list"
       COMMANDS+=("list")
 
       shift_arg
       APPSPEC.parse-help-service-list
 
+
       return
     ;;
     start)
-      debug "COMMAND start"
       COMMANDS+=("start")
 
       shift_arg
       APPSPEC.parse-help-service-start
 
+
       return
     ;;
     status)
-      debug "COMMAND status"
       COMMANDS+=("status")
 
       shift_arg
       APPSPEC.parse-help-service-status
 
+
       return
     ;;
     stop)
-      debug "COMMAND stop"
       COMMANDS+=("stop")
 
       shift_arg
       APPSPEC.parse-help-service-stop
 
+
       return
     ;;
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      APPSPEC.add-error "Unknown subcommand '${argv[0]}'"
       shift_arg
       APPSPEC.run-op
       return
@@ -462,30 +544,121 @@ APPSPEC.parse-help-service() {
 
 }
 
-APPSPEC.parse-help-test1() {
-  [[ ${#argv[@]} -eq 0 ]] && return
-
+APPSPEC.parse-options-help-service() {
+  debug "APPSPEC.parse-options-help-service()"
+  $END_OF_OPTIONS && return 1
   while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
+    *) return 1
+    ;;
+    esac
+  done
+  return 0
+}
+
+APPSPEC.parse-help-test1() {
+  debug "APPSPEC.parse-help-test1()"
+  [[ ${#argv[@]} -eq 0 ]] && return
+
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-help-test1; then
+        break
+    fi
+
+    case "${argv[0]}" in
     # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
+    *) return
+    ;;
+
+    esac
+  done
+
+}
+
+APPSPEC.parse-options-help-test1() {
+  debug "APPSPEC.parse-options-help-test1()"
+  $END_OF_OPTIONS && return 1
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    case "${argv[0]}" in
+    --) shift_arg; END_OF_OPTIONS=true; break
+    ;;
+    --*)
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
+        shift_arg
+        break
+    ;;
+
+    -*)
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
+        shift_arg
+        break
+
+    ;;
+
+    *) return 1
+    ;;
+    esac
+  done
+  return 0
+}
+
+APPSPEC.parse-help() {
+  debug "APPSPEC.parse-help()"
+  [[ ${#argv[@]} -eq 0 ]] && return
+
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-help; then
+        break
+    fi
+
+    case "${argv[0]}" in
+    # SUBCOMMANDS
+    nested1)
+      COMMANDS+=("nested1")
+
       shift_arg
+      APPSPEC.parse-help-nested1
+
+
+      return
+    ;;
+    service)
+      COMMANDS+=("service")
+
+      shift_arg
+      APPSPEC.parse-help-service
+
+
+      return
+    ;;
+    test1)
+      COMMANDS+=("test1")
+
+      shift_arg
+      APPSPEC.parse-help-test1
+
+
+      return
+    ;;
+    *)
+      APPSPEC.add-error "Unknown subcommand '${argv[0]}'"
+      shift_arg
+      APPSPEC.run-op
       return
     ;;
 
@@ -495,9 +668,9 @@ APPSPEC.parse-help-test1() {
 
 }
 
-APPSPEC.parse-help() {
-  [[ ${#argv[@]} -eq 0 ]] && return
-
+APPSPEC.parse-options-help() {
+  debug "APPSPEC.parse-options-help()"
+  $END_OF_OPTIONS && return 1
   while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --all)
@@ -506,122 +679,91 @@ APPSPEC.parse-help() {
         shift_arg
 
     ;;
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
-    # SUBCOMMANDS
-    nested1)
-      debug "COMMAND nested1"
-      COMMANDS+=("nested1")
-
-      shift_arg
-      APPSPEC.parse-help-nested1
-
-      return
+    *) return 1
     ;;
-    service)
-      debug "COMMAND service"
-      COMMANDS+=("service")
-
-      shift_arg
-      APPSPEC.parse-help-service
-
-      return
-    ;;
-    test1)
-      debug "COMMAND test1"
-      COMMANDS+=("test1")
-
-      shift_arg
-      APPSPEC.parse-help-test1
-
-      return
-    ;;
-    *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
-      shift_arg
-      APPSPEC.run-op
-      return
-    ;;
-
-
     esac
   done
-
+  return 0
 }
 
 APPSPEC.parse-nested1-nested2() {
+  debug "APPSPEC.parse-nested1-nested2()"
   [[ ${#argv[@]} -eq 0 ]] && return
 
   while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-nested1-nested2; then
+        break
+    fi
+
     case "${argv[0]}" in
-    --) shift_arg; break
-    ;;
-    --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
-        shift_arg
-        break
-    ;;
-
-    -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
-        shift_arg
-        break
-
-    ;;
-
     # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return
     ;;
-
 
     esac
   done
 
 }
 
-APPSPEC.parse-nested1() {
-  [[ ${#argv[@]} -eq 0 ]] && return
-
+APPSPEC.parse-options-nested1-nested2() {
+  debug "APPSPEC.parse-options-nested1-nested2()"
+  $END_OF_OPTIONS && return 1
   while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
+    *) return 1
+    ;;
+    esac
+  done
+  return 0
+}
+
+APPSPEC.parse-nested1() {
+  debug "APPSPEC.parse-nested1()"
+  [[ ${#argv[@]} -eq 0 ]] && return
+
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-nested1; then
+        break
+    fi
+
+    case "${argv[0]}" in
     # SUBCOMMANDS
     nested2)
-      debug "COMMAND nested2"
       COMMANDS+=("nested2")
 
       shift_arg
       APPSPEC.parse-nested1-nested2
+
       if [[ -z "$OP" ]]; then
         OP=nested2
         APPSPEC.run-op
@@ -630,7 +772,7 @@ APPSPEC.parse-nested1() {
       return
     ;;
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      APPSPEC.add-error "Unknown subcommand '${argv[0]}'"
       shift_arg
       APPSPEC.run-op
       return
@@ -642,165 +784,316 @@ APPSPEC.parse-nested1() {
 
 }
 
-APPSPEC.parse-service-list() {
-  [[ ${#argv[@]} -eq 0 ]] && return
-
+APPSPEC.parse-options-nested1() {
+  debug "APPSPEC.parse-options-nested1()"
+  $END_OF_OPTIONS && return 1
   while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
-    # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return 1
     ;;
+    esac
+  done
+  return 0
+}
 
+APPSPEC.parse-service-list() {
+  debug "APPSPEC.parse-service-list()"
+  [[ ${#argv[@]} -eq 0 ]] && return
+
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-service-list; then
+        break
+    fi
+
+    case "${argv[0]}" in
+    # SUBCOMMANDS
+    *) return
+    ;;
 
     esac
   done
+
+}
+
+APPSPEC.parse-options-service-list() {
+  debug "APPSPEC.parse-options-service-list()"
+  $END_OF_OPTIONS && return 1
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    case "${argv[0]}" in
+    --) shift_arg; END_OF_OPTIONS=true; break
+    ;;
+    --*)
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
+        shift_arg
+        break
+    ;;
+
+    -*)
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
+        shift_arg
+        break
+
+    ;;
+
+    *) return 1
+    ;;
+    esac
+  done
+  return 0
+}
+
+APPSPEC.params-service-start() {
+  debug "APPSPEC.params-service-start()"
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-service-start; then
+        break
+    fi
+    PARAM_SERVICE="${argv[0]}"
+    shift_arg
+    break
+  done
+  if APPSPEC.parse-options-service-start; then
+    true
+  fi
+  if [[ -z "$PARAM_SERVICE" ]]; then
+    APPSPEC.add-error "Missing required parameter 'service'"
+  fi
 
 }
 
 APPSPEC.parse-service-start() {
+  debug "APPSPEC.parse-service-start()"
   [[ ${#argv[@]} -eq 0 ]] && return
 
   while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-service-start; then
+        break
+    fi
+
     case "${argv[0]}" in
-    --) shift_arg; break
+    # SUBCOMMANDS
+    *) return
+    ;;
+
+    esac
+  done
+
+}
+
+APPSPEC.parse-options-service-start() {
+  debug "APPSPEC.parse-options-service-start()"
+  $END_OF_OPTIONS && return 1
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    case "${argv[0]}" in
+    --restart)
+        debug "LONG OPTION restart"
+        OPT_RESTART=true
+        shift_arg
+
+    ;;
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
-        shift_arg
-        break
+      local i arg=${argv[0]/-/}
+      for (( i=0; i < "${#arg}"; i++ )); do
+        local char="${arg:$i:1}"
+        value="${arg:$i+1}"
+        if (( $i+1 == ${#arg} )); then
+          shift_arg
+          value="${argv[0]}"
+        fi
+        debug "processing short $char. arg=$arg value=$value"
+        case "$char" in
+        r)
+          debug "SHORT OPTION restart"
+          OPT_RESTART=true
+
+        ;;
+        *)
+          APPSPEC.add-error "Unknown option '-$char'"
+          shift_arg
+          break
+        ;;
+        esac
+      done
 
     ;;
 
-    # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return 1
     ;;
-
-
     esac
   done
+  return 0
+}
+
+APPSPEC.params-service-status() {
+  debug "APPSPEC.params-service-status()"
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-service-status; then
+        break
+    fi
+    PARAM_SERVICE="${argv[0]}"
+    shift_arg
+    break
+  done
+  if APPSPEC.parse-options-service-status; then
+    true
+  fi
+  if [[ -z "$PARAM_SERVICE" ]]; then
+    APPSPEC.add-error "Missing required parameter 'service'"
+  fi
 
 }
 
 APPSPEC.parse-service-status() {
+  debug "APPSPEC.parse-service-status()"
   [[ ${#argv[@]} -eq 0 ]] && return
 
   while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-service-status; then
+        break
+    fi
+
     case "${argv[0]}" in
-    --) shift_arg; break
+    # SUBCOMMANDS
+    *) return
+    ;;
+
+    esac
+  done
+
+}
+
+APPSPEC.parse-options-service-status() {
+  debug "APPSPEC.parse-options-service-status()"
+  $END_OF_OPTIONS && return 1
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    case "${argv[0]}" in
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
-    # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return 1
     ;;
-
-
     esac
   done
+  return 0
+}
+
+APPSPEC.params-service-stop() {
+  debug "APPSPEC.params-service-stop()"
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-service-stop; then
+        break
+    fi
+    PARAM_SERVICE="${argv[0]}"
+    shift_arg
+    break
+  done
+  if APPSPEC.parse-options-service-stop; then
+    true
+  fi
+  if [[ -z "$PARAM_SERVICE" ]]; then
+    APPSPEC.add-error "Missing required parameter 'service'"
+  fi
 
 }
 
 APPSPEC.parse-service-stop() {
+  debug "APPSPEC.parse-service-stop()"
   [[ ${#argv[@]} -eq 0 ]] && return
 
   while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-service-stop; then
+        break
+    fi
+
     case "${argv[0]}" in
-    --) shift_arg; break
-    ;;
-    --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
-        shift_arg
-        break
-    ;;
-
-    -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
-        shift_arg
-        break
-
-    ;;
-
     # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return
     ;;
-
 
     esac
   done
 
 }
 
-APPSPEC.parse-service() {
-  [[ ${#argv[@]} -eq 0 ]] && return
-
+APPSPEC.parse-options-service-stop() {
+  debug "APPSPEC.parse-options-service-stop()"
+  $END_OF_OPTIONS && return 1
   while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
 
     -*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
 
     ;;
 
+    *) return 1
+    ;;
+    esac
+  done
+  return 0
+}
+
+APPSPEC.parse-service() {
+  debug "APPSPEC.parse-service()"
+  [[ ${#argv[@]} -eq 0 ]] && return
+
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-service; then
+        break
+    fi
+
+    case "${argv[0]}" in
     # SUBCOMMANDS
     list)
-      debug "COMMAND list"
       COMMANDS+=("list")
 
       shift_arg
       APPSPEC.parse-service-list
+
       if [[ -z "$OP" ]]; then
         OP=list
         APPSPEC.run-op
@@ -809,11 +1102,13 @@ APPSPEC.parse-service() {
       return
     ;;
     start)
-      debug "COMMAND start"
       COMMANDS+=("start")
+      declare OPT_RESTART=false
+      declare PARAM_SERVICE # REQUIRED
 
       shift_arg
       APPSPEC.parse-service-start
+      APPSPEC.params-service-start
       if [[ -z "$OP" ]]; then
         OP=start
         APPSPEC.run-op
@@ -822,11 +1117,12 @@ APPSPEC.parse-service() {
       return
     ;;
     status)
-      debug "COMMAND status"
       COMMANDS+=("status")
+      declare PARAM_SERVICE # REQUIRED
 
       shift_arg
       APPSPEC.parse-service-status
+      APPSPEC.params-service-status
       if [[ -z "$OP" ]]; then
         OP=status
         APPSPEC.run-op
@@ -835,11 +1131,12 @@ APPSPEC.parse-service() {
       return
     ;;
     stop)
-      debug "COMMAND stop"
       COMMANDS+=("stop")
+      declare PARAM_SERVICE # REQUIRED
 
       shift_arg
       APPSPEC.parse-service-stop
+      APPSPEC.params-service-stop
       if [[ -z "$OP" ]]; then
         OP=stop
         APPSPEC.run-op
@@ -848,7 +1145,7 @@ APPSPEC.parse-service() {
       return
     ;;
     *)
-      APPSPEC.add-error "unknown subcommand ${argv[0]}"
+      APPSPEC.add-error "Unknown subcommand '${argv[0]}'"
       shift_arg
       APPSPEC.run-op
       return
@@ -860,9 +1157,55 @@ APPSPEC.parse-service() {
 
 }
 
+APPSPEC.parse-options-service() {
+  debug "APPSPEC.parse-options-service()"
+  $END_OF_OPTIONS && return 1
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    case "${argv[0]}" in
+    --) shift_arg; END_OF_OPTIONS=true; break
+    ;;
+    --*)
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
+        shift_arg
+        break
+    ;;
+
+    -*)
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
+        shift_arg
+        break
+
+    ;;
+
+    *) return 1
+    ;;
+    esac
+  done
+  return 0
+}
+
 APPSPEC.parse-test1() {
+  debug "APPSPEC.parse-test1()"
   [[ ${#argv[@]} -eq 0 ]] && return
 
+  while [[ ${#argv[@]} -gt 0 ]]; do
+    if APPSPEC.parse-options-test1; then
+        break
+    fi
+
+    case "${argv[0]}" in
+    # SUBCOMMANDS
+    *) return
+    ;;
+
+    esac
+  done
+
+}
+
+APPSPEC.parse-options-test1() {
+  debug "APPSPEC.parse-options-test1()"
+  $END_OF_OPTIONS && return 1
   while [[ ${#argv[@]} -gt 0 ]]; do
     case "${argv[0]}" in
     --flag-a)
@@ -911,10 +1254,10 @@ APPSPEC.parse-test1() {
         shift_arg
 
     ;;
-    --) shift_arg; break
+    --) shift_arg; END_OF_OPTIONS=true; break
     ;;
     --*)
-        APPSPEC.add-error "unknown option ${argv[0]}"
+        APPSPEC.add-error "Unknown option '${argv[0]}'"
         shift_arg
         break
     ;;
@@ -974,7 +1317,7 @@ APPSPEC.parse-test1() {
 
         ;;
         *)
-          APPSPEC.add-error "unknown option -$char"
+          APPSPEC.add-error "Unknown option '-$char'"
           shift_arg
           break
         ;;
@@ -983,17 +1326,11 @@ APPSPEC.parse-test1() {
 
     ;;
 
-    # SUBCOMMANDS
-    *)
-      debug "end of options and subcommands"
-      shift_arg
-      return
+    *) return 1
     ;;
-
-
     esac
   done
-
+  return 0
 }
 
 
@@ -1015,7 +1352,7 @@ APPSPEC.colored() {
     local colornames=($@)
     local varname value colored=
 
-    for i in ${colornames[@]}; do
+    for i in "${colornames[@]}"; do
         varname="APPSPEC_COLOR_$i"
         value="${!varname}"
         colored+="$value"
@@ -1090,5 +1427,5 @@ shift_arg() {
 }
 
 debug() {
-  $DEBUG && APPSPEC.colorize stderr "$@" DARKGRAY
+  $DEBUG && APPSPEC.colorize stderr "$@" DARKGRAY || true
 }

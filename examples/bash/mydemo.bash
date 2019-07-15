@@ -143,6 +143,7 @@ _mydemo() {
             __comp_current_options true || return # no subcmds, no params/opts
           ;;
           start)
+            FLAGS+=('--restart' 'Restart if already running' '-r' 'Restart if already running')
             __mydemo_handle_options_flags
             case ${MYWORDS[$INDEX-1]} in
 

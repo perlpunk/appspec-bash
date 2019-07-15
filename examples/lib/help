@@ -263,6 +263,7 @@ service  *      Service name
 
 Options:
 --help -h            Show command help (flag)
+--restart -r         Restart if already running (flag)
 --version -V         Show version (flag)
 
 EOHELP

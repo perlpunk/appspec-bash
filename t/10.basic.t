@@ -25,11 +25,21 @@ my $testdata = YAML::PP->new->load_file($testfile);
 for my $test (@$testdata) {
     my $args = $test->{args};
     my $output = $test->{output};
-    my $cmd = "$Bin/../examples/bin/mydemo @$args";
+    my $expected_exit = $test->{exit};
+
+    my $app = shift @$args;
+    my $cmd = "$Bin/../examples/bin/$app @$args 2>&1";
     my $lines = qx{$cmd};
+    my $exit = $?;
+    if ($expected_exit) {
+        ok $exit, "Command $app (@$args) exited with $exit";
+    }
+    else {
+        ok ! $exit, "Command $app (@$args) exited with $exit";
+    }
     for my $out (@$output) {
         if (my $regex = $out->{regex}) {
-            cmp_ok($lines, '=~', qr{$regex}, "mydemo (@$args) output matches qr{$regex}");
+            cmp_ok($lines, '=~', qr{$regex}, "$app (@$args) output matches qr{$regex}");
         }
     }
 }

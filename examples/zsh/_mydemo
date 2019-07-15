@@ -267,6 +267,8 @@ _mydemo() {
                             '-V[Show version]' \
                             '--help[Show command help]' \
                             '-h[Show command help]' \
+                            '--restart[Restart if already running]' \
+                            '-r[Restart if already running]' \
                             && ret=0
 
                         case $state in

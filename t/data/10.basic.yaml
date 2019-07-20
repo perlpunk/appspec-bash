@@ -62,3 +62,7 @@
   output:
       - regex: "Starting service"
       - regex: "Restarting"
+- args: [mydemo, service, start, --restart, --, -v]
+  exit: 1
+  output:
+      - regex: "Could not find service '-v'"

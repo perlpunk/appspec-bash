@@ -31,17 +31,35 @@ MyDemo.nested2() {
 }
 
 MyDemo.start() {
+    assert-service $PARAM_SERVICE
     APPSPEC.say "Starting service '$PARAM_SERVICE'..." BOLD MAGENTA
     if $OPT_RESTART; then
       APPSPEC.say "(Restarting if running)"
     fi
 }
 MyDemo.stop() {
+    assert-service $PARAM_SERVICE
     APPSPEC.say "Stooping service '$PARAM_SERVICE'..." BOLD CYAN
 }
 MyDemo.status() {
+    assert-service $PARAM_SERVICE
     APPSPEC.say "Status service '$PARAM_SERVICE':" BOLD
     output-service "$PARAM_SERVICE"
+}
+
+MyDemo.list() {
+    local varname status varname colors
+    for i in ${SERVICES[@]}; do
+        output-service "$i"
+    done
+}
+
+assert-service() {
+    for i in "${SERVICES[@]}"; do
+        [[ $i == $1 ]] && return 0
+    done
+    APPSPEC.error "Could not find service '$1'"
+    return 1
 }
 
 output-service() {
@@ -55,12 +73,6 @@ output-service() {
     echo -e "$service: $colorized"
 }
 
-MyDemo.list() {
-    local varname status varname colors
-    for i in ${SERVICES[@]}; do
-        output-service "$i"
-    done
-}
 
 
 # TODO shouldn't be necessary

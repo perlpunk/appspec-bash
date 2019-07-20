@@ -27,9 +27,10 @@ my %WriteMakefileArgs = (
   "MIN_PERL_VERSION" => "5.010000",
   "NAME" => "App::Spec::Bash",
   "PREREQ_PM" => {
-    "App::Spec" => "0.010",
+    "App::Spec" => "0.012",
     "App::Spec::Run::Cmd" => 0,
     "Data::Dumper" => 0,
+    "File::Path" => 0,
     "FindBin" => 0,
     "base" => 0,
     "strict" => 0,
@@ -51,9 +52,10 @@ my %WriteMakefileArgs = (
 
 
 my %FallbackPrereqs = (
-  "App::Spec" => "0.010",
+  "App::Spec" => "0.012",
   "App::Spec::Run::Cmd" => 0,
   "Data::Dumper" => 0,
+  "File::Path" => 0,
   "File::Spec" => 0,
   "FindBin" => 0,
   "IO::Handle" => 0,

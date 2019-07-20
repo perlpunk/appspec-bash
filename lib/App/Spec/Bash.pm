@@ -1,12 +1,14 @@
 # ABSTRACT: App Module and utilities for appspec-bash
 use strict;
 use warnings;
+use 5.010;
 package App::Spec::Bash;
 
 our $VERSION = '0.000'; # VERSION
 
 use base 'App::Spec::Run::Cmd';
 
+use File::Path qw/ remove_tree make_path /;
 use Data::Dumper;
 
 sub parser {
@@ -20,6 +22,118 @@ sub parser {
     open my $fh, '>', $bashfile or die $!;
     print $fh $bash;
     close $fh;
+}
+
+sub cmd_new {
+    my ($self, $run) = @_;
+    my $params = $run->parameters;
+    my $options = $run->options;
+    my $name = $options->{name};
+    my $class = $options->{class};
+    my $dir = $params->{path} // $class;
+    my $overwrite = $options->{overwrite} || 0;
+
+    my $spec = <<"EOM";
+name: $name
+appspec: { version: '0.001' }
+plugins: [-Meta] # not supported in bash
+class: $class
+title: 'app title'
+description: 'app description'
+
+subcommands:
+
+  cmd1:
+    op: cmd1
+    summary: Command1
+    options:
+    - flag-a|a   --Some flag a
+    - flag-b|b   --Some flag b
+    - opt-x|x=s  --Some option x
+    - opt-y|y=s@ --Some (multi) option y
+
+  cmd2:
+    op: cmd2
+    summary: Command2
+    options:
+    - verbose|v+ --Verbose output (can be used multiple times)
+    parameters:
+    - +name --Some required parameter
+EOM
+
+    my $script = sprintf <<'EOM', $name;
+#!/usr/bin/env bash
+
+DIR="$( dirname $BASH_SOURCE )"
+
+APPSPECDIR="$DIR/.."
+source "$APPSPECDIR/lib/appspec"
+source "$APPSPECDIR/lib/%s"
+
+APPSPEC.run $@
+EOM
+
+    my $module = <<"EOM";
+#!/usr/bin/env bash
+
+$class.cmd1() {
+  APPSPEC.say "Running command 1" BOLD
+  APPSPEC.say "flag-a: \$OPT_FLAG_A"
+  APPSPEC.say "flag-b: \$OPT_FLAG_B"
+  APPSPEC.say "opt-x: '\$OPT_OPT_X'"
+  APPSPEC.say "opt-y: (\${OPT_OPT_Y[*]})"
+}
+
+$class.cmd2() {
+  APPSPEC.say "Running command 2" MAGENTA
+  APPSPEC.say "verbose: \$OPT_VERBOSE"
+  APPSPEC.say "name: \$PARAM_NAME"
+}
+EOM
+
+    if (-e $dir) {
+        unless ($overwrite) {
+            say "Remove directory '$dir' first or use --overwrite...";
+            return;
+        }
+        say "Removing directory '$dir' first...";
+        remove_tree $dir, { verbose => 1 };
+    }
+    make_path(
+        "$dir/bin", "$dir/lib", "$dir/share/completion/zsh",
+        "$dir/share/completion/bash", { verbose => 1 });
+
+    say "Creating $dir/share/$name.yaml ...";
+    open my $fh, '>', "$dir/share/$name.yaml" or die $!;
+    print $fh $spec;
+    close $fh;
+
+    say "Creating $dir/bin/$name ...";
+    open $fh, '>', "$dir/bin/$name" or die $!;
+    print $fh $script;
+    close $fh;
+    chmod 0755, "$dir/bin/$name" or die $!;
+
+    say "Creating $dir/lib/$name ...";
+    open $fh, '>', "$dir/lib/$name" or die $!;
+    print $fh $module;
+    close $fh;
+
+    say <<"EOM";
+Created skeleton in $dir.
+
+To generate the parser and help, do:
+
+    % cd $dir
+    % appspec-bash generate parser share/$name.yaml lib/appspec
+    % appspec-bash generate help share/$name.yaml lib/help
+
+Try it out:
+    % bin/$name cmd1 -ab --opt-x x -yfoo --opt-y bar
+    % bin/$name cmd2 -vvv
+    % bin/$name cmd2 -vvv foo
+
+EOM
 }
 
 sub genhelp {

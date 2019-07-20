@@ -1,6 +1,6 @@
 #!bash
 
-# Generated with perl module App::Spec v0.011
+# Generated with perl module App::Spec v0.012
 
 _appspec-bash() {
 
@@ -23,7 +23,7 @@ _appspec-bash() {
 
     0)
         __comp_current_options || return
-        __appspec-bash_dynamic_comp 'commands' 'generate'$'\t''Generate parser, help'$'\n''help'$'\t''Show command help'
+        __appspec-bash_dynamic_comp 'commands' 'generate'$'\t''Generate parser, help'$'\n''help'$'\t''Show command help'$'\n''new'$'\t''Generate new app'
 
     ;;
     *)
@@ -162,7 +162,7 @@ _appspec-bash() {
 
         1)
             __comp_current_options || return
-            __appspec-bash_dynamic_comp 'commands' 'generate'
+            __appspec-bash_dynamic_comp 'commands' 'generate'$'\n''new'
 
         ;;
         *)
@@ -248,8 +248,34 @@ _appspec-bash() {
             ;;
             esac
           ;;
+          new)
+            __appspec-bash_handle_options_flags
+            __comp_current_options true || return # no subcmds, no params/opts
+          ;;
         esac
 
+        ;;
+        esac
+      ;;
+      new)
+        FLAGS+=('--overwrite' 'Overwrite existing dist directory' '-o' 'Overwrite existing dist directory')
+        OPTIONS+=('--name' 'The (file) name of the app' '-n' 'The (file) name of the app' '--class' 'The main "class" (function prefix) for your app implementation' '-c' 'The main "class" (function prefix) for your app implementation')
+        __appspec-bash_handle_options_flags
+        case ${MYWORDS[$INDEX-1]} in
+          --name|-n)
+          ;;
+          --class|-c)
+          ;;
+
+        esac
+        case $INDEX in
+          1)
+              __comp_current_options || return
+          ;;
+
+
+        *)
+            __comp_current_options || return
         ;;
         esac
       ;;

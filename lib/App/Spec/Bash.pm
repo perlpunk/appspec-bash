@@ -310,7 +310,7 @@ $local_declare
       APPSPEC.run-op
       return
   fi
-  while [[ \${#argv[@]} > 0 ]]; do
+  while [[ \${#argv[@]} -gt 0 ]]; do
     debug "processing \${argv[0]}..."
     case "\${argv[0]}" in
 $global_opt_long
@@ -509,7 +509,6 @@ EOM
             my $function = <<"EOM";
 APPSPEC.parse-$funcname() {
   debug "APPSPEC.parse-$funcname()"
-  [[ \${#argv[@]} -eq 0 ]] && return
 
   while [[ \${#argv[@]} -gt 0 ]]; do
     if APPSPEC.parse-options-$funcname; then
@@ -560,7 +559,7 @@ EOM
     }
     else {
         $code .= <<"EOM";
-    *) return
+    *) break
     ;;
 EOM
     }

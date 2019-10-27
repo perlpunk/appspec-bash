@@ -1,6 +1,6 @@
 #compdef appspec-bash
 
-# Generated with perl module App::Spec v0.012
+# Generated with perl module App::Spec v0.013
 
 _appspec-bash() {
     local program=appspec-bash
@@ -156,7 +156,7 @@ _appspec-bash() {
 _files
                         ;;
                         output)
-
+_files
                         ;;
                         esac
 
@@ -178,7 +178,7 @@ _files
 _files
                         ;;
                         output)
-
+_files
                         ;;
                         esac
 
@@ -385,7 +385,7 @@ _files
 
                 case $state in
                 path)
-
+_path_files -/
                 ;;
                 esac
 

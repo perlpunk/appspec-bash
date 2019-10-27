@@ -142,16 +142,16 @@ subcommands:
         summary: Generate main commandline parser script
 
         parameters:
-        - +spec= +file     --YAML Specification file
-        - +output= +string   --Output file, e.g. lib/appspec
+        - +spec= +file       --YAML Specification file
+        - +output= +filename --Output file, e.g. lib/appspec
 
       help:
         op: genhelp
         summary: Generate help functions
 
         parameters:
-        - +spec= +file     --YAML Specification file
-        - +output= +string   --Output file, e.g. lib/help
+        - +spec= +file       --YAML Specification file
+        - +output= +filename --Output file, e.g. lib/help
 
   new:
     summary: Generate new app
@@ -167,7 +167,7 @@ subcommands:
         appspec-bash new --name mytool --class MyTool MyTool
 
     parameters:
-      - path=s --Path to the distribution directory (default is the classname in current directory)
+      - path= +dirname --Path to the distribution directory (default is the classname in current directory)
     options:
     - +name|n=s    --The (file) name of the app
     - +class|c=s   --The main "class" (function prefix) for your app implementation

@@ -1,6 +1,6 @@
 #!bash
 
-# Generated with perl module App::Spec v0.012
+# Generated with perl module App::Spec v0.013
 
 _appspec-bash() {
 
@@ -120,9 +120,11 @@ _appspec-bash() {
             case $INDEX in
               2)
                   __comp_current_options || return
+                    compopt -o filenames
               ;;
               3)
                   __comp_current_options || return
+                    compopt -o filenames
               ;;
 
 
@@ -139,9 +141,11 @@ _appspec-bash() {
             case $INDEX in
               2)
                   __comp_current_options || return
+                    compopt -o filenames
               ;;
               3)
                   __comp_current_options || return
+                    compopt -o filenames
               ;;
 
 
@@ -271,6 +275,7 @@ _appspec-bash() {
         case $INDEX in
           1)
               __comp_current_options || return
+                compopt -o dirnames
           ;;
 
 

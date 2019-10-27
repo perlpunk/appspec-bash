@@ -129,6 +129,98 @@ description: |
       % bin/mytool cmd2 -vvv
       % bin/mytool cmd2 -vvv foo
 
+  =head2 OPTION AND PARAMETER PARSING
+
+  appspec-bash supports various types of options.
+
+  =head3 Flags
+
+      # YAML
+      options:
+      - verbose|v -- Verbose output
+
+      % mytool --verbose
+      % mytool -v
+
+  You can also stack several flags:
+
+      % mytool -abc
+
+  =head3 Options with values
+
+      # YAML
+      options:
+      - color|c=s --Specify color
+
+      % mytool --color red
+      % mytool -c red
+      % mytool -cred
+      # Not yet supported
+      # mytool --color=red
+
+  You can stack flags together with options. If you have the flags C<-a> and
+  C<-b> and the option C<-c>, then you can use this syntax:
+
+      % mytool -abc23
+
+  =head3 Incremental flags
+
+      # YAML
+      options:
+      - verbose|v+ --Verbose output (incremental)
+
+      % mytool -vvv                # like: declare -i OPT_VERBOSE=3
+      % mytool --verbose --verbose # like: declare -i OPT_VERBOSE=2
+
+  =head3 Options with multiple values
+
+      # YAML
+      options:
+      - server|s=s@  --List of servers
+
+      % mytool --server foo --server bar
+      % mytool -s foo -s bar
+
+  =head3 Parameters
+
+      # YAML
+      parameters:
+      - name: server
+        required: true
+        summary: Server name
+
+  =head3 Option types
+
+  By default, an option is a flag. To accept a value, add a C<=>. Then it will
+  be a string by default:
+
+      - foo=
+      # or
+      - foo=s
+
+  You can also create integer options:
+
+      - max=i --Specify maximum value
+
+  Then you can treat it as an integer and use C<OPT_MAX+=1> for example.
+
+  There are also the types C<file>, C<dir>, C<filename> and C<dirname>.
+  Currently they are only relevant for completion.
+
+      # YAML
+      - input= +file      --Input filename
+      - source-dir= +dir  --Source directory
+      - output= +filename --Output file
+      - out-dir= +dirname --Output directory
+
+  In the future, C<file> and C<dir> will check for an existing file or
+  directory. And C<filename> and C<dirname> can be used if the file
+  or directory doesn't exist yet, but the tab completion will still offer
+  file or directory names.
+
+  See the C<mydemo> app in the example directory for examples of options and
+  parameters.
+
 options: []
 
 subcommands:

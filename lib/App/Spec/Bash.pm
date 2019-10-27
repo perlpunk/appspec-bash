@@ -764,3 +764,43 @@ EOM
 }
 
 1;
+
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+App::Spec::Bash - Use Perl to generate advanced bash apps
+
+=head1 SYNOPSIS
+
+    # Generate skeleton for new app
+    appspec-bash new --class MyTool --name mytool
+
+=head1 DESCRIPTION
+
+This app can create advanced bash scripts by generating bash code from a
+specification written in YAML. The specification is the same that L<App::Spec>
+uses.
+
+This is the first release. Be prepared for API changes. Sorry!
+
+See the documentation for the L<appspec-bash> commandline tool.
+
+=head1 SEE ALSO
+
+=over
+
+=item L<App::Spec>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2019 by Tina Müller
+
+This library is free software and may be distributed under the same terms
+as perl itself.
+
+=cut

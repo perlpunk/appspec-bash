@@ -23,5 +23,5 @@ example-completion:
 example-pod:
 	appspec pod examples/mydemo.yaml > examples/pod/mydemo.pod
 
-#lib/App/AppSpec/Spec.pm: share/appspec-bash.yaml
-#	perl tools/generate-spec-pm.pl
+lib/App/Spec/Bash/Spec.pm: share/appspec-bash.yaml
+	perl tools/generate-spec-pm.pl

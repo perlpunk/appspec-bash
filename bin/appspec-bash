@@ -11,9 +11,9 @@ our $VERSION = '0.000'; # VERSION
 
 use App::Spec;
 use App::Spec::Bash;
-my $specfile = "$Bin/../share/appspec-bash.yaml";
+use App::Spec::Bash::Spec qw/ $SPEC /;
 
-my $spec = App::Spec->read($specfile);
+my $spec = App::Spec->read($SPEC);
 my $run = $spec->runner;
 $run->run;
 
